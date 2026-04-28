@@ -1,7 +1,19 @@
 export interface PhaseField {
   id: string;
   label: string;
-  type: "text" | "email" | "tel" | "url" | "textarea" | "select" | "checkbox" | "radio" | "number" | "date" | "file" | "content";
+  type:
+    | "text"
+    | "email"
+    | "tel"
+    | "url"
+    | "textarea"
+    | "select"
+    | "checkbox"
+    | "radio"
+    | "number"
+    | "date"
+    | "file"
+    | "content";
   required: boolean;
   options?: string[];
 }

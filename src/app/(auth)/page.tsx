@@ -40,7 +40,7 @@ export default function AuthPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-void)" }}>
+      <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center" style={{ background: "var(--bg-void)" }}>
         <div className="scanline-overlay" />
         <Loader text="Verifying session..." />
       </div>
@@ -48,7 +48,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 relative overflow-hidden" style={{ background: "var(--bg-void)" }}>
+    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5 relative overflow-hidden" style={{ background: "var(--bg-void)" }}>
 
       {/* Background circuits & grid */}
       <div className="tech-grid" aria-hidden="true" />

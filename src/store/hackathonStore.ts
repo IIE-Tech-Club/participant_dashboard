@@ -22,17 +22,23 @@ export async function fetchProgress(hackathonId: string, userId: string): Promis
   }
 }
 
-export async function commitPhase(hackathonId: string, userId: string, phaseId: string, data?: any) {
+export async function commitPhase(hackathonId: string, userId: string, phaseId: string, data?: any): Promise<{ ok: boolean; message?: string }> {
   try {
     const response = await fetch(`${API_BASE}/registrations`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, hackathonId, phase: phaseId, data })
     });
-    return response.ok;
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { ok: false, message: errorData.message || "Protocol rejection from server." };
+    }
+
+    return { ok: true };
   } catch (error) {
     console.error(`Commit phase ${phaseId} failure:`, error);
-    return false;
+    return { ok: false, message: "Network failure or server unavailable." };
   }
 }
 

@@ -4,11 +4,12 @@ interface ErrorAlertProps {
   title: string;
   message: string;
   onRetry?: () => void;
+  className?: string;
 }
 
-export default function ErrorAlert({ title, message, onRetry }: ErrorAlertProps) {
+export default function ErrorAlert({ title, message, onRetry, className }: ErrorAlertProps) {
   return (
-    <div className="relative border border-[rgba(244,63,94,0.25)] bg-[rgba(244,63,94,0.06)] p-5 overflow-hidden">
+    <div className={`relative border border-[rgba(244,63,94,0.25)] bg-[rgba(244,63,94,0.06)] p-5 overflow-hidden ${className || ""}`}>
       {/* Left accent */}
       <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#f43f5e]" />
 

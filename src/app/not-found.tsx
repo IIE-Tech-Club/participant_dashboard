@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-5" style={{ background: "var(--bg-void)" }}>
+    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5" style={{ background: "var(--bg-void)" }}>
       <div className="scanline-overlay" />
 
       {/* Ambient grid */}

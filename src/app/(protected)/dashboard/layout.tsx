@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Navbar from "@/components/layout/Navbar";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -9,9 +8,7 @@ type DashboardLayoutProps = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen text-[rgba(224,247,255,0.9)] flex flex-col" style={{ background: "var(--bg-void)" }}>
-      {/* Sticky Navbar */}
-      <Navbar />
+    <div className="min-h-[calc(100vh-var(--nav-h))] text-[rgba(224,247,255,0.9)] flex flex-col" style={{ background: "var(--bg-void)" }}>
 
       {/* Background FX */}
       <div className="circuit-bg" aria-hidden="true">

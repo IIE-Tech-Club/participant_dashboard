@@ -4,24 +4,56 @@ import { useEffect, useState, useMemo } from "react";
 import HackathonCard from "@/components/hackathon/HackathonCard";
 import { useAuth } from "@/hooks/useAuth";
 import ErrorAlert from "@/components/ui/ErrorAlert";
-import Loader from "@/components/ui/Loader";
 import { fetchProgress } from "@/store/hackathonStore";
 import type { Hackathon, HackathonProgress } from "@/types/hackathon";
+import { signOutUser } from "@/lib/firebase/client";
+import Link from "next/link";
+import Image from "next/image";
 
-function SkeletonCard() {
+function DashboardSkeleton() {
   return (
-    <div className="glass-card overflow-hidden animate-pulse min-h-[140px] flex flex-col md:flex-row">
-      <div className="w-full md:w-64 h-36 md:h-auto bg-[rgba(255,255,255,0.03)] shrink-0" />
-      <div className="p-6 flex-1 space-y-4">
-        <div className="h-5 bg-[rgba(255,255,255,0.05)] rounded w-3/4 max-w-sm" />
-        <div className="h-3 bg-[rgba(255,255,255,0.03)] rounded w-1/2" />
-        <div className="h-2 bg-[rgba(255,255,255,0.03)] rounded w-full max-w-2xl mt-4" />
+    <div className="flex flex-col min-h-[calc(100vh-68px)] bg-[#020617] animate-pulse">
+      {/* Hero Skeleton */}
+      <div className="relative h-48 md:h-64 shrink-0 overflow-hidden border-b border-[rgba(0,245,255,0.1)]">
+        <div className="absolute inset-0 bg-[rgba(255,255,255,0.02)]" />
+        <div className="absolute inset-0 flex flex-col justify-end p-5 lg:p-8">
+          <div className="max-w-7xl w-full mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex-1 space-y-4">
+              <div className="h-2 w-24 bg-[rgba(255,255,255,0.05)] rounded" />
+              <div className="h-12 w-64 bg-[rgba(255,255,255,0.05)] rounded" />
+              <div className="h-4 w-96 bg-[rgba(255,255,255,0.03)] rounded" />
+              <div className="flex gap-3 pt-2">
+                <div className="h-10 w-32 bg-[rgba(255,255,255,0.05)] rounded" />
+                <div className="h-10 w-24 bg-[rgba(255,255,255,0.02)] rounded" />
+              </div>
+            </div>
+            <div className="w-24 h-24 md:w-36 md:h-36 rounded-full bg-[rgba(255,255,255,0.03)] border-2 border-[rgba(255,255,255,0.05)]" />
+          </div>
+        </div>
       </div>
-      <div className="w-full md:w-56 p-6 bg-[rgba(255,255,255,0.01)] shrink-0 space-y-3 hidden md:block">
-        <div className="h-4 bg-[rgba(255,255,255,0.03)] w-20 float-right" />
-        <div className="clear-both" />
-        <div className="h-8 bg-[rgba(255,255,255,0.05)] w-24 mt-8 float-right" />
+
+      {/* Filter Bar Skeleton */}
+      <div className="border-b border-[rgba(0,245,255,0.05)] bg-[rgba(2,6,23,0.4)] py-6">
+        <div className="max-w-7xl mx-auto px-5 flex gap-8">
+           {[...Array(6)].map((_, i) => (
+             <div key={i} className="h-3 w-16 bg-[rgba(255,255,255,0.03)] rounded" />
+           ))}
+        </div>
       </div>
+
+      {/* Main List Skeleton */}
+      <main className="flex-1 w-full p-5 lg:p-14 max-w-7xl mx-auto space-y-4">
+         {[...Array(3)].map((_, i) => (
+           <div key={i} className="glass-card h-[140px] w-full flex overflow-hidden">
+             <div className="w-64 bg-[rgba(255,255,255,0.02)] shrink-0" />
+             <div className="p-6 flex-1 space-y-4">
+               <div className="h-5 w-3/4 bg-[rgba(255,255,255,0.04)]" />
+               <div className="h-3 w-1/2 bg-[rgba(255,255,255,0.02)]" />
+               <div className="h-2 w-full bg-[rgba(255,255,255,0.02)]" />
+             </div>
+           </div>
+         ))}
+      </main>
     </div>
   );
 }
@@ -33,6 +65,14 @@ export default function DashboardPage() {
   const [hackathonsLoading, setHackathonsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
+
+  const handleLogout = async () => {
+    await Promise.all([
+      fetch("/api/auth/logout", { method: "POST" }),
+      signOutUser(),
+    ]);
+    window.location.href = "/";
+  };
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -55,43 +95,16 @@ export default function DashboardPage() {
           );
           setProgressMap(pMap);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Dashboard fetch error:", err);
-        setFetchError(err.message || "Connection to neural link severed.");
+        setFetchError(err instanceof Error ? err.message : "Connection to neural link severed.");
       } finally {
         setHackathonsLoading(false);
       }
     };
     if (!authLoading) fetchAll();
   }, [user, authLoading]);
-
-  const loading = authLoading || hackathonsLoading;
-
-  if (authError || fetchError) {
-    return (
-      <div className="max-w-xl mx-auto px-6 py-24">
-        <ErrorAlert
-          title={authError ? "Auth Protocol Failure" : "Data Link Error"}
-          message={authError || fetchError || "Unknown system error."}
-          onRetry={() => window.location.reload()}
-        />
-      </div>
-    );
-  }
-
-  const firstName =
-    user?.displayName?.split(" ")[0] ||
-    user?.email?.split("@")[0] ||
-    "Hacker";
-
-  const total = hackathons.length;
-  const startedCount = Object.values(progressMap).filter(
-    (p) => p?.responses && Object.keys(p.responses).length > 0
-  ).length;
-  const completedCountTotal = Object.values(progressMap).filter(
-    (p) => p?.status === "completed"
-  ).length;
-
+  
   const availableFilters = useMemo(() => {
     return ["All", "Live", "Completed", "In Progress", "Upcoming", "Closed"];
   }, []);
@@ -124,6 +137,27 @@ export default function DashboardPage() {
     });
   }, [hackathons, progressMap, activeFilter]);
 
+  const loading = authLoading || hackathonsLoading;
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (authError || fetchError) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-24">
+        <ErrorAlert
+          title={authError ? "Auth Protocol Failure" : "Data Link Error"}
+          message={authError || fetchError || "Unknown system error."}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
+
+  const firstName =
+    user?.displayName?.split(" ")[0] ||
+    user?.email?.split("@")[0] ||
+    "Hacker";
+    
   const getFilterColor = (label: string) => {
     if (label === "All") return "#ffffff";
     if (label === "Live") return "#00f5ff";
@@ -160,36 +194,57 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-2 h-2 rounded-full bg-[#00f5ff] animate-pulse-dot" />
                 <span className="font-orbitron font-bold text-[10px] text-[rgba(0,245,255,0.8)] uppercase tracking-[0.3em]">
-                  System.Live
+                  Agent.Verified
                 </span>
               </div>
-              <h1 className="font-orbitron font-black text-3xl md:text-5xl text-white uppercase tracking-tight leading-tight mb-2 drop-shadow-[0_0_15px_rgba(0,245,255,0.3)]">
-                MISSION_LOG
+              <h1 className="font-orbitron font-black text-3xl md:text-6xl text-white uppercase tracking-tighter leading-none mb-3 drop-shadow-[0_0_20px_rgba(0,245,255,0.4)]">
+                {user?.displayName || firstName}
               </h1>
-              <p className="font-mono-cc text-xs md:text-sm text-[rgba(224,247,255,0.6)] max-w-2xl">
-                Welcome back, <span className="text-[#00f5ff]">{firstName}</span>. Select a hackathon to begin your journey or resume your progress.
+              <p className="font-mono-cc text-xs md:text-base text-[rgba(224,247,255,0.5)] max-w-xl leading-relaxed mb-6">
+                Welcome back {firstName}. All systems operational. 
               </p>
+              
+              <div className="flex items-center gap-3">
+                <Link href={`/${user?.uid}`} className="btn-primary">
+                  UPDATE PROFILE
+                </Link>
+                <button onClick={handleLogout} className="btn-ghost">
+                  LOGOUT
+                </button>
+              </div>
             </div>
 
-            {!loading && total > 0 && (
-              <div className="flex items-center gap-6 md:gap-8 shrink-0">
-                <div>
-                  <p className="font-orbitron text-[9px] font-bold text-[rgba(245,158,11,0.6)] uppercase tracking-[0.2em] mb-1">
-                    Active Missions
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono-cc text-2xl text-[#f59e0b] font-bold">{startedCount}</span>
+            <div className="shrink-0 relative group">
+              {/* Decorative rings */}
+              <div className="absolute inset-[-8px] border border-[rgba(0,245,255,0.1)] rounded-full animate-pulse-slow" />
+              <div className="absolute inset-[-16px] border border-[rgba(0,245,255,0.05)] rounded-full animate-pulse-slow" style={{ animationDelay: "1s" }} />
+              
+              <div className="w-24 h-24 md:w-36 md:h-36 rounded-full border-2 border-[rgba(0,245,255,0.3)] bg-[#040b14] overflow-hidden relative z-10 shadow-[0_0_40px_rgba(0,245,255,0.15)] group-hover:border-[#00f5ff] group-hover:shadow-[0_0_50px_rgba(0,245,255,0.3)] transition-all duration-500">
+                {user?.photoURL ? (
+                  <Image 
+                    src={user.photoURL} 
+                    alt={user.displayName || "User Profile"} 
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 96px, 144px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[#00f5ff] text-4xl md:text-5xl font-black font-orbitron">
+                    {firstName[0]}
                   </div>
-                </div>
-
-                <div className="hidden md:block">
-                  <p className="font-orbitron text-[9px] font-bold text-[rgba(16,185,129,0.6)] uppercase tracking-[0.2em] mb-1">
-                    Completed
-                  </p>
-                  <span className="font-mono-cc text-2xl text-[#10b981] font-bold">{completedCountTotal}</span>
-                </div>
+                )}
+                
+                {/* HUD Overlay */}
+                <div className="absolute inset-0 pointer-events-none border-10 border-transparent border-t-[rgba(0,245,255,0.1)] rounded-full" />
               </div>
-            )}
+
+              {/* Status Indicator */}
+              <div className="absolute bottom-2 right-2 w-5 h-5 bg-[#020617] rounded-full p-1 z-20 border border-[rgba(0,245,255,0.2)]">
+                <div className="w-full h-full bg-[#10b981] rounded-full shadow-[0_0_10px_#10b981]" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -242,11 +297,7 @@ export default function DashboardPage() {
 
       <main className="flex-1 w-full bg-[#020617]">
         <div className="max-w-7xl mx-auto px-5 py-10 lg:py-14">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 w-full">
-              <Loader text="Fetching Active Missions..." />
-            </div>
-          ) : filteredHackathons.length === 0 ? (
+          {filteredHackathons.length === 0 ? (
             <div className="glass-card p-16 text-center max-w-lg mx-auto">
               <div className="w-14 h-14 mx-auto mb-5 border border-[rgba(0,245,255,0.2)] flex items-center justify-center bg-[rgba(0,245,255,0.05)]">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,245,255,0.5)" strokeWidth="1.5">

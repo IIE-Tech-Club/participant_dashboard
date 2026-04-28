@@ -3,6 +3,7 @@ import { AuthProvider } from "@/context/AuthProvider";
 import "@/globals.css";
 import type { ReactNode } from "react";
 import CustomCursor from "@/components/ui/CustomCursor";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "CodeCraft — Student Dashboard",
@@ -14,7 +15,7 @@ type RootLayoutProps = { children: ReactNode };
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -25,7 +26,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body suppressHydrationWarning className="antialiased">
         <CustomCursor />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

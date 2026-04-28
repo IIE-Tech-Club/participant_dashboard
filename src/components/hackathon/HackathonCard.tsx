@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { Hackathon, HackathonProgress } from "@/types/hackathon";
 
 interface HackathonCardProps {
@@ -49,11 +50,20 @@ export default function HackathonCard({ hackathon, progress }: HackathonCardProp
         
         {/* ── Left Image Banner ── */}
         <div className="w-full md:w-64 h-36 md:h-auto relative flex items-end overflow-hidden bg-[#040b14] shrink-0">
-          {hackathon.banner ? (
-            <img
+          {hackathon.banner && (hackathon.banner.startsWith('http') || hackathon.banner.startsWith('/')) ? (
+            <Image
               src={hackathon.banner}
               alt={hackathon.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-55 group-hover:scale-105 transition-all duration-700"
+              fill
+              sizes="(max-width: 768px) 100vw, 256px"
+              className="absolute inset-0 object-cover opacity-40 group-hover:opacity-55 group-hover:scale-105 transition-all duration-700"
+            />
+          ) : hackathon.banner ? (
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                background: hackathon.banner,
+              }}
             />
           ) : (
             <div

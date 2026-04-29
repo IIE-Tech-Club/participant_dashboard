@@ -15,30 +15,16 @@ export default function NotFound() {
         }}
       />
 
-      <div className="w-full max-w-lg text-center relative z-10 animate-fade-up">
+      <div className="w-full max-w-lg text-center relative z-10 animate-fade-up scanlines-glitch py-12">
         {/* 404 display */}
-        <div className="mb-4 relative">
-          <span
-            className="font-orbitron font-black text-[100px] leading-none select-none"
-            style={{
-              background: "linear-gradient(135deg, rgba(0,245,255,0.9) 0%, rgba(0,245,255,0.2) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
+        <div className="mb-6 glitch-container">
+          <div 
+            className="glitch-text text-[120px] md:text-[150px] leading-none select-none text-white opacity-90"
+            data-text="404"
           >
             404
-          </span>
-          {/* Ghost duplicate for glitch look */}
-          <span
-            className="font-orbitron font-black text-[100px] leading-none select-none absolute inset-0 opacity-20"
-            style={{
-              color: "#f43f5e",
-              transform: "translate(2px, -2px)",
-              clipPath: "inset(30% 0 40% 0)",
-            }}
-          >
-            404
-          </span>
+          </div>
+          <div className="glitch-glow text-[120px] md:text-[150px] leading-none text-cyan-500">404</div>
         </div>
 
         <div className="section-tag mx-auto mb-5 w-fit">

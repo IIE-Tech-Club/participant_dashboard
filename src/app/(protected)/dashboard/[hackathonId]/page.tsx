@@ -106,7 +106,9 @@ export default function HackathonDetailPage() {
     >
       {/* ══════════════ HERO HEADER ══════════════ */}
       <div className="relative h-48 md:h-64 shrink-0 overflow-hidden border-b border-[rgba(0,245,255,0.15)]">
-        {hackathon.banner && (hackathon.banner.startsWith('http') || hackathon.banner.startsWith('/')) ? (
+        {hackathon.banner &&
+        (hackathon.banner.startsWith("http") ||
+          hackathon.banner.startsWith("/")) ? (
           <Image
             src={hackathon.banner}
             alt={hackathon.title}
@@ -116,9 +118,9 @@ export default function HackathonDetailPage() {
             className="absolute inset-0 object-cover opacity-30"
           />
         ) : hackathon.banner ? (
-          <div 
-            className="absolute inset-0 opacity-30" 
-            style={{ background: hackathon.banner }} 
+          <div
+            className="absolute inset-0 opacity-30"
+            style={{ background: hackathon.banner }}
           />
         ) : (
           <div className="absolute inset-0 bg-linear-to-br from-[rgba(0,245,255,0.1)] to-[rgba(139,92,246,0.1)]" />
@@ -181,8 +183,8 @@ export default function HackathonDetailPage() {
 
       {/* ══════════════ PHASE BREADCRUMB TRACKER ══════════════ */}
       <div className="border-b border-[rgba(0,245,255,0.1)] bg-[rgba(2,6,23,0.85)] backdrop-blur-md sticky top-[68px] z-30">
-        <div className="max-w-7xl mx-auto px-5 py-4 overflow-x-auto scrollbar-hide">
-          <div className="flex items-center w-full justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-5 py-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory sm:overflow-visible sm:snap-none">
+          <div className="flex items-center gap-3">
             {hackathon.phases.map((phase, idx) => {
               const unlocked = isPhaseUnlocked(
                 hackathon.phases,
@@ -193,9 +195,9 @@ export default function HackathonDetailPage() {
               const isActive = activePhaseId === phase.id;
 
               return (
-                <div 
-                  key={phase.id} 
-                  className={`flex items-center ${idx < hackathon.phases.length - 1 ? "flex-1" : ""}`}
+                <div
+                  key={phase.id}
+                  className={`flex items-center snap-start shrink-0 ${idx < hackathon.phases.length - 1 ? "flex-1" : ""}`}
                 >
                   <button
                     disabled={!unlocked}
@@ -208,7 +210,7 @@ export default function HackathonDetailPage() {
                     )}
 
                     <div
-                      className={`relative z-10 w-10 h-10 shrink-0 flex items-center justify-center text-[11px] font-black font-orbitron transition-all duration-300 ${
+                      className={`relative z-10 shrink-0 w-8 h-8 sm:w-10 sm:h-10 text-[9px] sm:text-[11px] flex items-center justify-center font-black font-orbitron transition-all duration-300 ${
                         isActive
                           ? "bg-[#00f5ff] text-[#020617] shadow-[0_0_15px_rgba(0,245,255,0.6)] border-2 border-[#00f5ff]"
                           : isDone
@@ -258,7 +260,7 @@ export default function HackathonDetailPage() {
                     </div>
 
                     <span
-                      className={`font-orbitron font-bold text-[9px] uppercase tracking-[0.15em] transition-colors whitespace-nowrap ${
+                      className={`font-orbitron font-bold text-[8px] sm:text-[9px] text-center leading-tight max-w-[70px] sm:max-w-none uppercase tracking-[0.15em] transition-colors ${
                         isActive
                           ? "text-[#00f5ff]"
                           : isDone
@@ -274,7 +276,7 @@ export default function HackathonDetailPage() {
 
                   {/* Connector Line */}
                   {idx < hackathon.phases.length - 1 && (
-                    <div className="flex-1 px-4 -mt-5">
+                    <div className="hidden sm:flex flex-1 px-4 -mt-5">
                       <div className="h-[2px] w-full bg-[rgba(255,255,255,0.05)] relative overflow-hidden">
                         {isDone && (
                           <div className="absolute inset-0 bg-[#00f5ff] shadow-[0_0_8px_#00f5ff]" />
@@ -295,7 +297,7 @@ export default function HackathonDetailPage() {
           {/* Left Column: Mission Command */}
           {hackathon.organizers && hackathon.organizers.length > 0 && (
             <div
-              className="w-full lg:w-72 shrink-0 lg:sticky lg:top-[160px] animate-fade-up"
+              className="w-full lg:w-72 shrink-0 order-2 lg:order-1 lg:sticky lg:top-[160px]"
               style={{ animationDelay: "0.1s" }}
             >
               <div className="glass-card border border-[rgba(0,245,255,0.1)] bg-[rgba(2,6,23,0.4)] p-5">
@@ -338,7 +340,7 @@ export default function HackathonDetailPage() {
                             <div className="flex items-center gap-2 mt-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-[#00f5ff] shadow-[0_0_5px_#00f5ff] animate-pulse" />
                               <p className="font-mono-cc text-[9px] text-[rgba(0,245,255,0.8)] uppercase tracking-[0.2em]">
-                                Online // Active
+                                Active
                               </p>
                             </div>
                           </div>
@@ -402,7 +404,7 @@ export default function HackathonDetailPage() {
           )}
 
           {/* Right Column: Mission Phase */}
-          <div className="flex-1 w-full min-w-0">
+          <div className="flex-1 w-full min-w-0 order-1 lg:order-2">
             {activePhaseObj ? (
               <div className="animate-fade-up" key={activePhaseObj.id}>
                 <DynamicPhase

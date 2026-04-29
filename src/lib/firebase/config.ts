@@ -15,7 +15,6 @@ if (!firebaseConfig.apiKey) {
   // warn developers during server startup — don't throw so imports remain safe
   // but the client initializer will throw if keys are missing when actually used.
   // This helps catch misconfiguration early.
-  // eslint-disable-next-line no-console
   console.warn(
     "Missing NEXT_PUBLIC_FIREBASE_API_KEY — set NEXT_PUBLIC_FIREBASE_* in .env.local for client auth",
   );

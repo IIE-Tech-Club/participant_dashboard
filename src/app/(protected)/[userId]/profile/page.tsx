@@ -42,8 +42,9 @@ export default function ProfilePage() {
           bio: data.bio || "",
           phone: data.phone || "",
         });
-      } catch (err: any) {
-        setError(err.message || "Failed to connect to database.");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to connect to database.";
+        setError(msg);
       } finally {
         setLoading(false);
       }
@@ -84,8 +85,9 @@ export default function ProfilePage() {
 
       if (!res.ok) throw new Error("Failed to update profile.");
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || "Update failed.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Update failed.";
+      setError(msg);
     } finally {
       setSaving(false);
     }

@@ -183,6 +183,7 @@ export default function DynamicPhase({
   const [invitationStatus, setInvitationStatus] = useState<Record<string, { status: string; loading?: boolean }>>({});
   const [acceptedTeam, setAcceptedTeam] = useState<string | null>(null);
   const [checkingAccepted, setCheckingAccepted] = useState(true);
+  const [uploadCounts, setUploadCounts] = useState<Record<string, number>>({});
 
   // Refs to avoid unnecessary effect triggers
   const formRef = useRef(form);
@@ -301,8 +302,25 @@ export default function DynamicPhase({
       setCheckingAccepted(false);
     };
 
+    const fetchRegistration = async () => {
+      if (user) {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/registrations/${hackathon.id}/user/${user.uid}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.uploadCounts) {
+              setUploadCounts(data.uploadCounts);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch registration for counts", err);
+        }
+      }
+    };
+
     fetchProfile();
     fetchAcceptedTeam();
+    fetchRegistration();
   }, [user, phase.id, existingResponse, hackathon.id]);
 
   const isCompleted = !!existingResponse;
@@ -459,6 +477,14 @@ export default function DynamicPhase({
       setErrors((e) => ({ ...e, [fieldId]: "File exceeds 10MB." }));
       return;
     }
+
+    const countKey = `${phase.id}_${fieldId}`;
+    const currentCount = uploadCounts[countKey] || 0;
+    if (currentCount >= 3) {
+      setErrors((e) => ({ ...e, [fieldId]: "Upload limit reached (3/3). Transmission locked." }));
+      return;
+    }
+
     setUploadingField(fieldId);
     setErrors((e) => ({ ...e, [fieldId]: "" }));
     const cn = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -468,18 +494,46 @@ export default function DynamicPhase({
       setUploadingField(null);
       return;
     }
+    const isPDF = file.type === "application/pdf";
+    const fixedFile = isPDF ? new File([file], file.name, { type: "application/pdf" }) : file;
+
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("file", fixedFile);
     fd.append("upload_preset", up);
-    fd.append("resource_type", "auto");
+
+    const resourceType = isPDF ? "raw" : "image";
+    fd.append("resource_type", resourceType);
+    fd.append("folder", `hackathons/${hackathon.id}/submissions`);
+
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/upload`, {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/${resourceType}/upload`, {
         method: "POST",
         body: fd,
       });
       const data = await res.json();
-      if (data.secure_url) updateField(fieldId, data.secure_url);
-      else throw new Error(data.error?.message || "Upload failed");
+      if (data.secure_url) {
+        // Increment count on backend
+        try {
+          const countRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/registrations/upload-count`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: user?.uid,
+              hackathonId: hackathon.id,
+              phaseId: phase.id,
+              fieldId: fieldId
+            })
+          });
+          if (countRes.ok) {
+            const countData = await countRes.json();
+            setUploadCounts(prev => ({ ...prev, [countKey]: countData.count }));
+          }
+        } catch (err) {
+          console.error("Failed to sync upload count", err);
+        }
+        
+        updateField(fieldId, data.secure_url);
+      } else throw new Error(data.error?.message || "Upload failed");
     } catch (err: unknown) {
       console.error("PDF upload error:", err);
       setErrors((e) => ({ ...e, [fieldId]: "Upload failed. Try again." }));
@@ -804,8 +858,8 @@ export default function DynamicPhase({
                             const f = e.target.files?.[0];
                             if (f) uploadPDF(field.id, f);
                           }}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          disabled={isLocked || !!uploadingField}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                          disabled={isLocked || !!uploadingField || (uploadCounts[`${phase.id}_${field.id}`] || 0) >= 3}
                         />
                         <div
                           className={`w-full border border-dashed transition-all py-8 flex flex-col items-center justify-center gap-2 ${
@@ -824,28 +878,37 @@ export default function DynamicPhase({
                               </span>
                             </>
                           ) : form[field.id] ? (
-                            <>
-                              <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#10b981"
-                                strokeWidth="2"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              <span className="font-mono-cc text-[9px] text-[#10b981] break-all max-w-xs text-center">
-                                PDF Uploaded
-                              </span>
-                              <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.3)]">
-                                Click to replace
-                              </span>
-                            </>
+                            <div className="flex flex-col items-center gap-3 relative z-20">
+                              <div className="flex items-center gap-2">
+                                <svg
+                                  width="18"
+                                  height="18"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#10b981"
+                                  strokeWidth="2.5"
+                                >
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                <span className="font-mono-cc text-[10px] text-[#10b981] uppercase tracking-widest font-bold">
+                                  Packet_Received
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={String(form[field.id])}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="px-4 py-1.5 bg-[rgba(16,185,129,0.1)] hover:bg-[rgba(16,185,129,0.2)] text-[#10b981] border border-[rgba(16,185,129,0.3)] font-orbitron font-bold text-[9px] uppercase tracking-widest transition-all"
+                                >
+                                  Preview File
+                                </a>
+                                <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)]">
+                                  | {3 - (uploadCounts[`${phase.id}_${field.id}`] || 0)} attempts left
+                                </span>
+                              </div>
+                            </div>
                           ) : (
                             <>
                               <svg
@@ -864,10 +927,10 @@ export default function DynamicPhase({
                                 />
                               </svg>
                               <span className="font-mono-cc text-xs text-[rgba(224,247,255,0.4)]">
-                                Upload PDF Document
+                                {(uploadCounts[`${phase.id}_${field.id}`] || 0) >= 3 ? "Transmission Locked" : "Upload PDF Document"}
                               </span>
                               <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)] uppercase tracking-widest">
-                                Max 10MB
+                                Max 10MB • Attempts: {uploadCounts[`${phase.id}_${field.id}`] || 0}/3
                               </span>
                             </>
                           )}

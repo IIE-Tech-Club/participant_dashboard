@@ -20,9 +20,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        orbitron: ["Orbitron", "sans-serif"],
-        grotesk: ["Space Grotesk", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        orbitron: "var(--font-orbitron)",
+        space: "var(--font-space)",
+        mono: "var(--font-mono)",
       },
       transitionDuration: {
         "400": "400ms",
@@ -30,7 +30,7 @@ const config: Config = {
       boxShadow: {
         "glow-cyan": "0 0 20px rgba(0, 245, 255, 0.4)",
         "glow-inner": "inset 0 0 20px rgba(0, 245, 255, 0.05)",
-        "card": "0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)",
+        card: "0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)",
       },
       animation: {
         "fade-up": "fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",

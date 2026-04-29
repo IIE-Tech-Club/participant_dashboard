@@ -44,8 +44,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   photoURL: user.photoURL
                 }),
               });
-            } catch (err: any) {
-              setError(err.message || "Session synchronization failed.");
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : "Session synchronization failed.";
+              setError(msg);
             }
           }
         });
@@ -56,8 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setError("Initialization failure: Unable to establish auth listener.");
           setLoading(false);
         }
-      } catch (err: any) {
-        setError(err.message || "An unexpected authentication error occurred.");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "An unexpected authentication error occurred.";
+        setError(msg);
         setLoading(false);
       }
     })();

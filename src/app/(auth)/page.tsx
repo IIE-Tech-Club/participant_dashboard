@@ -6,6 +6,13 @@ import { signInWithGoogle } from "@/lib/firebase/client";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import Loader from "@/components/ui/Loader";
 
+const BACKGROUND_PARTICLES = Array.from({ length: 30 }, (_, i) => ({
+  left: `${(i * 33.7) % 100}%`,
+  delay: `${(i * 0.5) % 15}s`,
+  duration: `${10 + (i * 0.7) % 10}s`,
+  opacity: 0.2 + (i * 0.1) % 0.5,
+}));
+
 export default function AuthPage() {
   const { loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -32,8 +39,9 @@ export default function AuthPage() {
       });
       if (!res.ok) { setError("Authentication service unavailable. Please try again."); setLoading(false); return; }
       window.location.href = "/dashboard";
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setError(message);
       setLoading(false);
     }
   };
@@ -53,15 +61,15 @@ export default function AuthPage() {
       {/* Background circuits & grid */}
       <div className="tech-grid" aria-hidden="true" />
       <div className="particles-container" aria-hidden="true">
-        {[...Array(30)].map((_, i) => (
+        {BACKGROUND_PARTICLES.map((p, i) => (
           <div
             key={`particle-${i}`}
             className="particle"
             style={{
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 15}s`,
-              animationDuration: `${10 + Math.random() * 10}s`,
-              opacity: Math.random() * 0.5 + 0.2,
+              left: p.left,
+              animationDelay: p.delay,
+              animationDuration: p.duration,
+              opacity: p.opacity,
             }}
           />
         ))}

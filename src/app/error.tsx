@@ -16,20 +16,16 @@ export default function ErrorPage({
     <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5" style={{ background: "var(--bg-void)" }}>
       <div className="scanline-overlay" />
 
-      <div className="w-full max-w-lg text-center animate-fade-up">
+      <div className="w-full max-w-lg text-center animate-fade-up scanlines-glitch py-12">
         {/* Glitchy error code */}
-        <div className="mb-6">
-          <span
-            className="font-orbitron font-black text-[80px] leading-none"
-            style={{
-              background: "linear-gradient(135deg, #f43f5e 0%, rgba(244,63,94,0.5) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              textShadow: "none",
-            }}
+        <div className="mb-8 glitch-container">
+          <div 
+            className="glitch-text text-[100px] md:text-[130px] leading-none select-none text-rose-500"
+            data-text="500"
           >
             500
-          </span>
+          </div>
+          <div className="glitch-glow text-[100px] md:text-[130px] leading-none text-rose-600">500</div>
         </div>
 
         <div className="section-tag mx-auto mb-5 w-fit border-[rgba(244,63,94,0.25)] bg-[rgba(244,63,94,0.05)]">

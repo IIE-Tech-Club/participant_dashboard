@@ -57,6 +57,6 @@ export interface Hackathon {
 
 export interface HackathonProgress {
   hackathonId: string;
-  responses: Record<string, unknown>;
+  responses: Record<string, Record<string, string | boolean | number>>;
   status: string;
 }

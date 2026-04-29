@@ -43,7 +43,7 @@ export async function commitPhase(hackathonId: string, userId: string, phaseId: 
 }
 
 // Helper to check unlock status locally based on phase order
-export function isPhaseUnlocked(hackathonPhases: {id: string}[], responses: Record<string, unknown>, phaseId: string): boolean {
+export function isPhaseUnlocked(hackathonPhases: {id: string}[], responses: Record<string, Record<string, string | boolean | number>>, phaseId: string): boolean {
   if (!hackathonPhases || hackathonPhases.length === 0) return false;
   const idx = hackathonPhases.findIndex(p => p.id === phaseId);
   if (idx <= 0) return true; // First phase is always unlocked

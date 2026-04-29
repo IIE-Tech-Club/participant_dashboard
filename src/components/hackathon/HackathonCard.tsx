@@ -59,6 +59,8 @@ export default function HackathonCard({ hackathon, progress }: HackathonCardProp
               src={hackathon.banner}
               alt={hackathon.title}
               fill
+              priority
+              loading="eager"
               sizes="(max-width: 640px) 100vw, 256px"
               className="absolute inset-0 object-cover opacity-40 group-hover:opacity-55 group-hover:scale-105 transition-all duration-700"
             />

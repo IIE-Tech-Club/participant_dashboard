@@ -115,6 +115,7 @@ export default function HackathonDetailPage() {
             fill
             sizes="100vw"
             priority
+            loading="eager"
             className="absolute inset-0 object-cover opacity-30"
           />
         ) : hackathon.banner ? (
@@ -410,7 +411,7 @@ export default function HackathonDetailPage() {
                 <DynamicPhase
                   hackathon={hackathon}
                   phase={activePhaseObj}
-                  existingResponse={progress.responses[activePhaseObj.id]}
+                  existingResponse={progress.responses[activePhaseObj.id] || null}
                   onComplete={refreshProgress}
                 />
               </div>

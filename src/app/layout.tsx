@@ -4,6 +4,8 @@ import "@/globals.css";
 import type { ReactNode } from "react";
 import CustomCursor from "@/components/ui/CustomCursor";
 import Navbar from "@/components/layout/Navbar";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 // ✅ Proper font loading (Next.js optimized)
 import { Orbitron, Space_Grotesk, JetBrains_Mono } from "next/font/google";
@@ -47,6 +49,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <Navbar />
           {children}
         </AuthProvider>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

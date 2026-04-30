@@ -8,9 +8,16 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
 // ✅ Proper font loading (Next.js optimized)
-import { Orbitron, Space_Grotesk, JetBrains_Mono, Audiowide, Jim_Nightshade } from "next/font/google";
+import { Orbitron, Space_Grotesk, JetBrains_Mono, MedievalSharp } from "next/font/google";
+
+const medievalSharp = MedievalSharp({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-medieval",
+});
 
 const orbitron = Orbitron({
+// ... (keep others for fallback or specific uses)
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-orbitron",
@@ -28,18 +35,6 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
-const audiowide = Audiowide({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-audiowide",
-});
-
-const jimNightshade = Jim_Nightshade({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-nightshade",
-});
-
 export const metadata: Metadata = {
   title: "CodeCraft — Student Dashboard",
   description:
@@ -54,7 +49,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         suppressHydrationWarning
-        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${audiowide.variable} ${jimNightshade.variable} antialiased`}
+        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${medievalSharp.variable} antialiased`}
       >
         <CustomCursor />
         <AuthProvider>

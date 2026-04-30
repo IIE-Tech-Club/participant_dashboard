@@ -37,6 +37,14 @@
 
   /* Navbar height */
   --nav-h: 68px;
+
+  --font-audiowide: "Audiowide", sans-serif;
+}
+
+.audiowide-regular {
+  font-family: var(--font-audiowide);
+  font-weight: 400;
+  font-style: normal;
 }
 
 /* ── Keyframes ───────────────────────────── */

@@ -8,12 +8,18 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
 // ✅ Proper font loading (Next.js optimized)
-import { Orbitron, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Orbitron, Space_Grotesk, JetBrains_Mono, Audiowide } from "next/font/google";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-orbitron",
+});
+
+const audiowide = Audiowide({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-audiowide",
 });
 
 const spaceGrotesk = Space_Grotesk({
@@ -42,7 +48,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         suppressHydrationWarning
-        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${audiowide.variable} antialiased`}
       >
         <CustomCursor />
         <AuthProvider>

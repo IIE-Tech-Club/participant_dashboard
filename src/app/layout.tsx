@@ -8,18 +8,12 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
 // ✅ Proper font loading (Next.js optimized)
-import { Orbitron, Space_Grotesk, JetBrains_Mono, Audiowide } from "next/font/google";
+import { Orbitron, Space_Grotesk, JetBrains_Mono, Audiowide, Jim_Nightshade } from "next/font/google";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-orbitron",
-});
-
-const audiowide = Audiowide({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-audiowide",
 });
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,6 +26,18 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
   variable: "--font-mono",
+});
+
+const audiowide = Audiowide({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-audiowide",
+});
+
+const jimNightshade = Jim_Nightshade({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-nightshade",
 });
 
 export const metadata: Metadata = {
@@ -48,7 +54,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         suppressHydrationWarning
-        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${audiowide.variable} antialiased`}
+        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${audiowide.variable} ${jimNightshade.variable} antialiased`}
       >
         <CustomCursor />
         <AuthProvider>

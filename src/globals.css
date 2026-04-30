@@ -37,14 +37,6 @@
 
   /* Navbar height */
   --nav-h: 68px;
-
-  --font-audiowide: "Audiowide", sans-serif;
-}
-
-.audiowide-regular {
-  font-family: var(--font-audiowide);
-  font-weight: 400;
-  font-style: normal;
 }
 
 /* ── Keyframes ───────────────────────────── */
@@ -630,6 +622,8 @@ select:focus { outline: none; }
 .font-orbitron { font-family: var(--font-orbitron); }
 .font-mono-cc  { font-family: var(--font-mono); }
 .font-grotesk  { font-family: var(--font-grotesk); }
+.font-audiowide { font-family: var(--font-audiowide); }
+.font-nightshade { font-family: var(--font-nightshade); }
 
 .text-cyan    { color: var(--cyan); }
 .text-amber   { color: var(--amber); }

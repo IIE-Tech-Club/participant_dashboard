@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Loader from "@/components/ui/Loader";
 import DynamicPhase from "@/components/phases/DynamicPhase";
+import JudgePanel from "@/components/phases/JudgePanel";
 import { fetchProgress, isPhaseUnlocked } from "@/store/hackathonStore";
 import { useAuth } from "@/hooks/useAuth";
 import ErrorAlert from "@/components/ui/ErrorAlert";
@@ -20,6 +21,7 @@ export default function HackathonDetailPage() {
   const [progress, setProgress] = useState<HackathonProgress | null>(null);
   const [activePhaseId, setActivePhaseId] = useState<string>("");
   const [mounted, setMounted] = useState(false);
+  const [acceptingJudge, setAcceptingJudge] = useState(false);
 
   useEffect(() => {
     const fetchHackathon = async () => {
@@ -98,6 +100,33 @@ export default function HackathonDetailPage() {
   const completedCount = Object.keys(progress.responses).length;
   const totalPhases = hackathon.phases.length;
   const pct = Math.min(Math.round((completedCount / totalPhases) * 100), 100);
+
+  const judge = user ? hackathon.judges?.find(j => j.email === user.email) : null;
+  const isJudge = !!judge;
+  const isAcceptedJudge = judge?.status === 'accepted';
+
+  const handleAcceptJudge = async () => {
+    if (!user) return;
+    setAcceptingJudge(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hackathons/${hackathon.id}/judges/accept`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email })
+      });
+      if (res.ok) {
+        // Optimistic update
+        setHackathon({
+          ...hackathon,
+          judges: hackathon.judges?.map(j => j.email === user.email ? { ...j, status: 'accepted' } : j)
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAcceptingJudge(false);
+    }
+  };
 
   return (
     <div
@@ -182,7 +211,29 @@ export default function HackathonDetailPage() {
         </div>
       </div>
 
-      {/* ══════════════ PHASE BREADCRUMB TRACKER ══════════════ */}
+      {isJudge ? (
+        <main className="flex-1 w-full bg-[#020617] max-w-7xl mx-auto px-5 py-10">
+          {!isAcceptedJudge ? (
+            <div className="glass-card p-10 border border-[#00f5ff]/20 text-center max-w-2xl mx-auto">
+              <h2 className="text-2xl font-black text-white font-orbitron mb-4">Judge Invitation</h2>
+              <p className="text-slate-400 font-mono text-sm mb-8">
+                You have been invited to judge the <strong>{hackathon.title}</strong>. Accept the invitation to access the judging panel and evaluate team submissions.
+              </p>
+              <button 
+                onClick={handleAcceptJudge}
+                disabled={acceptingJudge}
+                className="neon-btn-cyan px-8 py-3 text-lg"
+              >
+                {acceptingJudge ? "Accepting..." : "Accept Invitation"}
+              </button>
+            </div>
+          ) : (
+            <JudgePanel hackathon={hackathon} />
+          )}
+        </main>
+      ) : (
+        <>
+          {/* ══════════════ PHASE BREADCRUMB TRACKER ══════════════ */}
       <div className="border-b border-[rgba(0,245,255,0.1)] bg-[rgba(2,6,23,0.85)] backdrop-blur-md sticky top-[68px] z-30">
         <div className="max-w-7xl mx-auto px-5 py-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory sm:overflow-visible sm:snap-none">
           <div className="flex items-center gap-3">
@@ -445,6 +496,8 @@ export default function HackathonDetailPage() {
           </div>
         </div>
       </main>
+      </>
+      )}
     </div>
   );
 }

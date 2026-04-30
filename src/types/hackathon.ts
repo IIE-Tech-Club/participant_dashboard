@@ -53,6 +53,16 @@ export interface Hackathon {
   startDate?: string;
   endDate?: string;
   phases: Phase[];
+  judges?: Array<{
+    email: string;
+    status: string;
+    name?: string;
+    avatar?: string;
+  }>;
+  judgingParameters?: Array<{
+    name: string;
+    maxScore: number;
+  }>;
 }
 
 export interface HackathonProgress {

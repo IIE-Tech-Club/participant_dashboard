@@ -8,12 +8,12 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
 // ✅ Proper font loading (Next.js optimized)
-import { Orbitron, Space_Grotesk, JetBrains_Mono, MedievalSharp } from "next/font/google";
+import { Orbitron, Space_Grotesk, JetBrains_Mono, Charm } from "next/font/google";
 
-const medievalSharp = MedievalSharp({
+const charm = Charm({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-medieval",
+  weight: ["400", "700"],
+  variable: "--font-charm",
 });
 
 const orbitron = Orbitron({
@@ -49,7 +49,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         suppressHydrationWarning
-        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${medievalSharp.variable} antialiased`}
+        className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${charm.variable} antialiased`}
       >
         <CustomCursor />
         <AuthProvider>

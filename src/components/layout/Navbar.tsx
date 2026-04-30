@@ -93,7 +93,7 @@ export default function Navbar() {
           {/* Center: Branding */}
           <div className="flex-1 flex justify-center">
             <Link href="/dashboard" className="group">
-              <span className="font-orbitron font-black text-base sm:text-lg text-white group-hover:text-[#00f5ff] transition-all duration-300 tracking-[0.15em] sm:tracking-[0.2em] uppercase whitespace-nowrap">
+              <span className="font-charm font-black text-xl sm:text-2xl text-white group-hover:text-[#00f5ff] transition-all duration-300 tracking-wider sm:tracking-widest uppercase whitespace-nowrap">
                 IIE <span className="text-[#00f5ff]">TECH</span> CLUB
               </span>
             </Link>

@@ -25,8 +25,9 @@ The **CodeCraft Student Portal** is the primary interface for hackathon particip
 | Path | Purpose |
 | :--- | :--- |
 | `src/app/` | Next.js App Router (Pages, Layouts, API Routes) |
+| `src/app/[userUid]/profile/` | Public Intro Profile (Authentication-free) |
+| `src/app/(protected)/[userId]/settings/` | Private Agent Profile (Editable) |
 | `src/components/` | Modular UI components (Layout, UI, Phases) |
-| `src/store/` | Global state management via Zustand |
 | `src/context/` | React Context providers for global state |
 | `src/hooks/` | Custom React hooks for business logic |
 | `src/lib/` | Shared utilities and Firebase configuration |

@@ -104,7 +104,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto px-5 py-10 lg:py-16">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/dashboard" className="btn-ghost px-3! py-2!">
+        <Link href={`/${user?.uid}/profile`} className="btn-ghost px-3! py-2!">
           <svg
             width="18"
             height="18"

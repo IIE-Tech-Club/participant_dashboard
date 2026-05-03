@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { commitPhase } from "@/store/hackathonStore";
 import { useAuth } from "@/hooks/useAuth";
-import type { Phase, Hackathon } from "@/types/hackathon";
+import type { Phase, Hackathon, PhaseField } from "@/types/hackathon";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import Loader from "@/components/ui/Loader";
 
@@ -169,6 +169,8 @@ export default function DynamicPhase({
       if (phase.id === "phase_1_registration" && user) {
         if (f.id === "name" && user.displayName) s[f.id] = user.displayName;
         if (f.id === "email" && user.email) s[f.id] = user.email;
+        if (f.id === "github") s[f.id] = ""; // Initialize placeholder
+        if (f.id === "linkedin") s[f.id] = ""; // Initialize placeholder
       }
     });
     return s;
@@ -264,6 +266,8 @@ export default function DynamicPhase({
               branch: data.branch || "",
               gender: data.gender || "",
               collegeName: data.collegeName || "",
+              github: data.github || "",
+              linkedin: data.linkedin || "",
             }));
           } else {
             // fallback if fetch fails
@@ -674,10 +678,33 @@ export default function DynamicPhase({
         <form onSubmit={handleSubmit}>
         <div className="glass-card p-6 lg:p-8 space-y-7">
           {/* Form Fields */}
-          {phase.fields && (
-            <div className="space-y-7">
-              {phase.fields.map((field) => (
-                <div key={field.id}>
+          {(() => {
+            const displayFields = [...(phase.fields || [])];
+            
+            // Inject GitHub and LinkedIn if it's the registration phase and they are missing
+            if (phase.id === "phase_1_registration") {
+              if (!displayFields.some(f => f.id === "github")) {
+                displayFields.push({
+                  id: "github",
+                  label: "GitHub Profile URL",
+                  type: "url",
+                  required: true
+                } as PhaseField);
+              }
+              if (!displayFields.some(f => f.id === "linkedin")) {
+                displayFields.push({
+                  id: "linkedin",
+                  label: "LinkedIn Profile URL",
+                  type: "url",
+                  required: true
+                } as PhaseField);
+              }
+            }
+
+            return (
+              <div className="space-y-7">
+                {displayFields.map((field) => (
+                  <div key={field.id}>
                   {/* Content block */}
                   {(field.type as string) === "content" ? (
                     <div className="relative p-5 border border-[rgba(0,245,255,0.12)] bg-[rgba(0,245,255,0.03)] overflow-hidden">
@@ -1037,8 +1064,9 @@ export default function DynamicPhase({
                   )}
                 </div>
               ))}
-            </div>
-          )}
+              </div>
+            );
+          })()}
 
           {/* Action Buttons */}
           <div className="pt-4 border-t border-[rgba(255,255,255,0.05)] flex items-center justify-end gap-3">

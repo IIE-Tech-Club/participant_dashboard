@@ -21,6 +21,8 @@ export default function ProfilePage() {
     collegeName: "",
     bio: "",
     phone: "",
+    github: "",
+    linkedin: "",
   });
 
   useEffect(() => {
@@ -41,6 +43,8 @@ export default function ProfilePage() {
           collegeName: data.collegeName || "",
           bio: data.bio || "",
           phone: data.phone || "",
+          github: data.github || "",
+          linkedin: data.linkedin || "",
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to connect to database.";
@@ -235,6 +239,30 @@ export default function ProfilePage() {
               value={formData.collegeName}
               onChange={handleChange}
               placeholder="e.g. MIT"
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="input-label">GitHub URL</label>
+            <input
+              type="url"
+              name="github"
+              value={formData.github}
+              onChange={handleChange}
+              placeholder="https://github.com/your-username"
+              className="input-field"
+            />
+          </div>
+
+          <div>
+            <label className="input-label">LinkedIn URL</label>
+            <input
+              type="url"
+              name="linkedin"
+              value={formData.linkedin}
+              onChange={handleChange}
+              placeholder="https://linkedin.com/in/your-profile"
               className="input-field"
             />
           </div>

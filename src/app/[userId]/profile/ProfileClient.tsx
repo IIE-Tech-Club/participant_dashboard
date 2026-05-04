@@ -63,7 +63,7 @@ export default function PublicProfileClient({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-68px)] bg-[#050505]">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-68px)] bg-transparent">
         <Loader text="Decrypting Agent Profile..." />
       </div>
     );
@@ -89,7 +89,7 @@ export default function PublicProfileClient({
   const isOwnProfile = currentUser?.uid === profile.uid;
 
   return (
-    <div className="min-h-screen bg-[#050505] py-12 px-6 lg:py-20">
+    <div className="min-h-screen bg-transparent py-12 px-6 lg:py-20">
       <div className="max-w-5xl mx-auto">
         {/* Navigation & Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-fade-in">

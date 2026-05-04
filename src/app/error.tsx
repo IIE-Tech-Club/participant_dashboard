@@ -13,8 +13,7 @@ export default function ErrorPage({
   useEffect(() => { console.error(error); }, [error]);
 
   return (
-    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5" style={{ background: "var(--bg-void)" }}>
-      <div className="scanline-overlay" />
+    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5 bg-transparent relative">
 
       <div className="w-full max-w-lg text-center animate-fade-up scanlines-glitch py-12">
         {/* Glitchy error code */}

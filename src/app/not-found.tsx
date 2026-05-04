@@ -9,41 +9,14 @@ export const metadata: Metadata = {
   },
 };
 
+
+
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 bg-[#020408] relative overflow-hidden">
-      {/* Ambient background layers */}
-      <div className="scanline-overlay" />
-      <div className="tech-grid opacity-40" />
+    <div className="min-h-screen flex items-center justify-center p-5 bg-transparent relative overflow-hidden">
+      {/* Ambient background layers handled globally */}
       
-      <div className="particles-container">
-        {[...Array(12)].map((_, i) => (
-          <div 
-            key={i} 
-            className="particle" 
-            style={{ 
-              left: `${(i * 31) % 100}%`, 
-              top: `${(i * 73) % 100}%`,
-              animationDelay: `${(i * 0.5) % 5}s`,
-              animationDuration: `${10 + ((i * 2) % 10)}s`
-            }} 
-          />
-        ))}
-      </div>
-
-      <div className="circuit-bg opacity-30">
-        {[...Array(8)].map((_, i) => (
-          <div 
-            key={i} 
-            className="circuit-line" 
-            style={{ 
-              left: `${i * 15}%`, 
-              animationDelay: `${(i * 1.2) % 4}s`,
-              height: "250px"
-            }} 
-          />
-        ))}
-      </div>
+      <div className="particles-container" aria-hidden="true" />
 
       <div className="w-full max-w-xl text-center relative z-10 animate-fade-up">
         {/* Massive 404 display with glitch */}

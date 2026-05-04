@@ -13,7 +13,7 @@ import { API_BASE_URL } from "@/lib/site";
 
 function DashboardSkeleton() {
   return (
-    <div className="flex flex-col min-h-[calc(100vh-68px)] bg-[#020617] animate-pulse">
+    <div className="flex flex-col min-h-[calc(100vh-68px)] bg-transparent animate-pulse">
       {/* Hero Skeleton */}
       <div className="relative h-40 sm:h-56 md:h-64 shrink-0 overflow-hidden border-b border-[rgba(0,245,255,0.1)]">
         <div className="absolute inset-0 bg-[rgba(255,255,255,0.02)]" />
@@ -41,7 +41,7 @@ function DashboardSkeleton() {
         </div>
       </div>
       {/* Cards Skeleton */}
-      <main className="flex-1 w-full p-4 lg:p-14 max-w-7xl mx-auto space-y-3">
+        <main className="flex-1 w-full bg-transparent max-w-7xl mx-auto px-5 py-10">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="glass-card h-28 sm:h-36 w-full" />
         ))}
@@ -145,22 +145,14 @@ export default function DashboardPage() {
 
   return (
     <div
-      className="flex flex-col min-h-[calc(100vh-68px)] bg-[#020617]"
+      className="flex flex-col min-h-screen bg-transparent"
       style={{ animation: "fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both" }}
     >
       {/* ── Hero Banner ── */}
       <div className="relative h-40 sm:h-52 md:h-64 shrink-0 overflow-hidden border-b border-[rgba(0,245,255,0.15)]">
         {/* BG layers */}
         <div className="absolute inset-0 bg-linear-to-br from-[rgba(0,245,255,0.05)] to-[rgba(139,92,246,0.05)]" />
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(0,245,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.05) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-[#020617] via-[rgba(2,6,23,0.5)] to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-transparent via-[rgba(2,6,23,0.3)] to-transparent" />
 
         <div className="absolute inset-0 flex flex-col justify-end">
           <div className="max-w-7xl w-full mx-auto px-4 sm:px-5 pb-4 sm:pb-6 lg:pb-8 flex flex-row items-end justify-between gap-4">
@@ -282,8 +274,8 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Hackathon List ── */}
-      <main className="flex-1 w-full bg-[#020617]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-5 py-6 sm:py-10 lg:py-14">
+      <main className="flex-1 w-full bg-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 py-4 sm:py-6 lg:py-8">
           {filteredHackathons.length === 0 ? (
             <div className="glass-card p-10 sm:p-16 text-center max-w-md mx-auto">
               <div className="w-12 h-12 mx-auto mb-4 border border-[rgba(0,245,255,0.2)] flex items-center justify-center bg-[rgba(0,245,255,0.05)]">

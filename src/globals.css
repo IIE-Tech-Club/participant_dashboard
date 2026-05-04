@@ -48,6 +48,26 @@
   100% { transform: translateY(110vh) scaleY(1); opacity: 0; }
 }
 
+@keyframes flowCircuit {
+  from { background-position: 0 0; }
+  to { background-position: 0 800px; }
+}
+
+@keyframes circuitPulse {
+  0%, 100% { opacity: 0.4; filter: brightness(1); }
+  50% { opacity: 0.8; filter: brightness(1.4) drop-shadow(0 0 2px var(--cyan)); }
+}
+
+@keyframes drawCircuit {
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes pulseNode {
+  0% { opacity: 0.2; r: 2; }
+  100% { opacity: 0.7; r: 4; fill: #fff; }
+}
+
 @keyframes scanline {
   0%   { transform: translateY(-100%); }
   100% { transform: translateY(100vh); }
@@ -162,7 +182,7 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--bg-void);
+  background-color: transparent;
   color: rgba(224, 247, 255, 0.9);
   font-family: var(--font-medieval), cursive;
   overflow-x: hidden;
@@ -170,17 +190,7 @@ body {
   line-height: 1.6;
 }
 
-/* Dot-matrix grid background */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(0, 245, 255, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
-  z-index: -3;
-  pointer-events: none;
-}
+
 
 /* Ambient glow overlay */
 body::after {
@@ -289,62 +299,11 @@ select:focus { outline: none; }
   z-index: 0;
 }
 
-.scanlines-glitch {
-  position: relative;
-  overflow: hidden;
-}
 
-.scanlines-glitch::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255, 255, 255, 0.05) 0.5%,
-    transparent 1%
-  );
-  pointer-events: none;
-  z-index: 10;
-  animation: scanline-fudge 7s ease-in-out alternate infinite;
-}
 
-/* ── Circuit Lines ──────────────────────── */
 
-.circuit-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  overflow: hidden;
-}
 
-.circuit-line {
-  position: absolute;
-  width: 1px;
-  height: 180px;
-  background: linear-gradient(180deg, transparent, var(--cyan), transparent);
-  opacity: 0;
-  animation: circuit-flow 9s infinite linear;
-}
 
-.tech-grid {
-  position: fixed;
-  bottom: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background-image: 
-    linear-gradient(rgba(0, 245, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 245, 255, 0.1) 1px, transparent 1px);
-  background-size: 50px 50px;
-  transform-origin: center top;
-  animation: grid-move 2s linear infinite;
-  z-index: -2;
-  pointer-events: none;
-  mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
-  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
-}
 
 .particles-container {
   position: fixed;

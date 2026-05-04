@@ -1,30 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { signInWithGoogle } from "@/lib/firebase/client";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import Loader from "@/components/ui/Loader";
 
-const BACKGROUND_PARTICLES = Array.from({ length: 30 }, (_, i) => ({
-  left: `${(i * 33.7) % 100}%`,
-  delay: `${(i * 0.5) % 15}s`,
-  duration: `${10 + (i * 0.7) % 10}s`,
-  opacity: 0.2 + (i * 0.1) % 0.5,
-}));
-
 export default function AuthPage() {
   const { loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const linePositions = useMemo(() =>
-    [8, 19, 31, 43, 55, 67, 79, 91].map((left, i) => ({
-      left,
-      delay: `${i * 0.7}s`,
-      duration: `${8 + (i % 4) * 2.5}s`,
-      height: `${120 + (i % 3) * 80}px`,
-    })), []);
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -47,30 +32,12 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5 relative overflow-hidden" style={{ background: "var(--bg-void)" }}>
+    <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5 relative overflow-hidden bg-transparent">
 
       {/* Background circuits & grid */}
-      <div className="tech-grid" aria-hidden="true" />
-      <div className="particles-container" aria-hidden="true">
-        {BACKGROUND_PARTICLES.map((p, i) => (
-          <div
-            key={`particle-${i}`}
-            className="particle"
-            style={{
-              left: p.left,
-              animationDelay: p.delay,
-              animationDuration: p.duration,
-              opacity: p.opacity,
-            }}
-          />
-        ))}
-      </div>
-      <div className="circuit-bg" aria-hidden="true">
-        {linePositions.map((pos, i) => (
-          <div key={i} className="circuit-line" style={{ left: `${pos.left}%`, animationDelay: pos.delay, animationDuration: pos.duration, height: pos.height }} />
-        ))}
-      </div>
-      <div className="scanline-overlay" aria-hidden="true" />
+
+      {/* Background circuits & grid handled globally */}
+      <div className="particles-container" aria-hidden="true" />
 
       {/* Radial glow */}
       <div className="pointer-events-none fixed inset-0 z-0" style={{

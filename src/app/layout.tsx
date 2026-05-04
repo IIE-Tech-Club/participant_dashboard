@@ -4,6 +4,7 @@ import "@/globals.css";
 import type { ReactNode } from "react";
 import CustomCursor from "@/components/ui/CustomCursor";
 import Navbar from "@/components/layout/Navbar";
+import CircuitBackground from "@/components/ui/CircuitBackground";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { SITE_URL, absoluteUrl, siteConfig } from "@/lib/site";
@@ -120,6 +121,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
         <CustomCursor />
         <AuthProvider>
+          <CircuitBackground opacity={0.3} />
+          <div className="scanline-overlay" aria-hidden="true" />
           <Navbar />
           {children}
         </AuthProvider>

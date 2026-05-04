@@ -79,15 +79,7 @@ export default function HackathonCard({ hackathon, progress }: HackathonCardProp
             />
           )}
 
-          {/* Grid overlay */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(0,245,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.06) 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-            }}
-          />
+
 
           {/* Gradient fades */}
           <div className="absolute inset-0 bg-linear-to-r from-transparent via-[rgba(4,11,20,0.15)] to-[#040b14] hidden sm:block" />

@@ -130,10 +130,7 @@ export default function HackathonDetailPage() {
   };
 
   return (
-    <div
-      className="flex flex-col min-h-[calc(100vh-68px)] bg-[#020617]"
-      style={{ animation: "fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both" }}
-    >
+    <div className="flex flex-col min-h-[calc(100vh-68px)] bg-transparent relative">
       {/* ══════════════ HERO HEADER ══════════════ */}
       <div className="relative h-48 md:h-64 shrink-0 overflow-hidden border-b border-[rgba(0,245,255,0.15)]">
         {hackathon.banner &&
@@ -156,14 +153,6 @@ export default function HackathonDetailPage() {
         ) : (
           <div className="absolute inset-0 bg-linear-to-br from-[rgba(0,245,255,0.1)] to-[rgba(139,92,246,0.1)]" />
         )}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(0,245,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.05) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
         <div className="absolute inset-0 bg-linear-to-t from-[#020617] via-[rgba(2,6,23,0.6)] to-transparent" />
 
         {/* Header Content */}
@@ -345,7 +334,7 @@ export default function HackathonDetailPage() {
       </div>
 
       {/* ══════════════ MAIN CONTENT ══════════════ */}
-      <main className="flex-1 w-full bg-[#020617]">
+      <main className="flex-1 w-full bg-transparent">
         <div className="max-w-7xl mx-auto px-5 py-10 lg:py-16 flex flex-col lg:flex-row gap-10 items-start">
           {/* Left Column: Mission Command */}
           {hackathon.organizers && hackathon.organizers.length > 0 && (

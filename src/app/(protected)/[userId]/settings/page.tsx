@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Loader from "@/components/ui/Loader";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/site";
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
@@ -30,7 +31,7 @@ export default function ProfilePage() {
       if (!user) return;
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/users/${user.uid}`,
+          `${API_BASE_URL}/users/${user.uid}`,
         );
         if (!res.ok) throw new Error("Failed to load profile data.");
         const data = await res.json();
@@ -77,7 +78,7 @@ export default function ProfilePage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${user.uid}`,
+        `${API_BASE_URL}/users/${user.uid}`,
         {
           method: "PUT",
           headers: {

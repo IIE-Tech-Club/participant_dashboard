@@ -3,6 +3,7 @@
 import { createContext, useEffect, useState, ReactNode } from "react";
 import type { User } from "firebase/auth";
 import { onAuthStateChangedListener } from "@/lib/firebase/client";
+import { API_BASE_URL } from "@/lib/site";
 
 export const AuthContext = createContext<{
   user: User | null;
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               });
 
               // Sync with MongoDB backend
-              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/sync`, {
+              await fetch(`${API_BASE_URL}/users/sync`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

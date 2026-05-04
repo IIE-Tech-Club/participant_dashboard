@@ -1,16 +1,58 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Loader from "@/components/ui/Loader";
 import { useAuth } from "@/hooks/useAuth";
 import type { Hackathon } from "@/types/hackathon";
+import { API_BASE_URL } from "@/lib/site";
+
+type SubmissionResponse = {
+  projectName?: string;
+  repoLink?: string;
+  demoLink?: string;
+  description?: string;
+  [key: string]: unknown;
+};
+
+type TeamFormationResponse = {
+  teamName?: string;
+};
+
+interface Evaluation {
+  judgeEmail?: string | null;
+  scores?: Record<string, number>;
+  feedback?: string;
+}
 
 interface Registration {
   _id: string;
   userId: string;
   user: { name: string; email: string };
-  responses: Record<string, any>;
-  evaluations?: any[];
+  responses: Record<string, unknown>;
+  evaluations?: Evaluation[];
+}
+
+function getSubmission(registration: Registration | null) {
+  return registration?.responses?.phase_3_submissions as
+    | SubmissionResponse
+    | undefined;
+}
+
+function getTeamFormation(registration: Registration) {
+  return registration.responses?.phase_2_team_formation as
+    | TeamFormationResponse
+    | undefined;
+}
+
+async function fetchTeamsForHackathon(hackathonId: string) {
+  const res = await fetch(`${API_BASE_URL}/registrations/${hackathonId}`);
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // Only consider registrations with submissions
+  return (data as Registration[]).filter((registration) =>
+    Boolean(getSubmission(registration)),
+  );
 }
 
 export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
@@ -23,24 +65,24 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchTeams();
-  }, [hackathon.id]);
+    let cancelled = false;
 
-  const fetchTeams = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/registrations/${hackathon.id}`);
-      if (res.ok) {
-        const data = await res.json();
-        // Only consider registrations with submissions
-        const withSubmissions = data.filter((r: any) => r.responses && r.responses['phase_3_submissions']);
-        setTeams(withSubmissions);
+    const loadTeams = async () => {
+      try {
+        const withSubmissions = await fetchTeamsForHackathon(hackathon.id);
+        if (!cancelled) setTeams(withSubmissions);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadTeams();
+    return () => {
+      cancelled = true;
+    };
+  }, [hackathon.id]);
 
   const handleScoreChange = (param: string, value: number) => {
     setScores(prev => ({ ...prev, [param]: value }));
@@ -50,7 +92,7 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
     if (!selectedReg || !user) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/registrations/evaluate/${selectedReg._id}`, {
+      const res = await fetch(`${API_BASE_URL}/registrations/evaluate/${selectedReg._id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -63,7 +105,8 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
         setSelectedReg(null);
         setScores({});
         setFeedback("");
-        fetchTeams(); // refresh to show updated state
+        const refreshedTeams = await fetchTeamsForHackathon(hackathon.id);
+        setTeams(refreshedTeams);
       }
     } catch (err) {
       console.error(err);
@@ -88,6 +131,7 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
   if (loading) return <Loader text="Loading teams..." />;
 
   const params = hackathon.judgingParameters || [];
+  const selectedSubmission = getSubmission(selectedReg);
 
   return (
     <div className="glass-card p-6 md:p-10 border border-[#00f5ff]/20">
@@ -105,21 +149,21 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
               ← Back to Teams
             </button>
             <h3 className="text-lg font-bold text-white font-orbitron">
-              Evaluating: {selectedReg.responses?.phase_3_submissions?.projectName || 'Unnamed Project'}
+              Evaluating: {selectedSubmission?.projectName || 'Unnamed Project'}
             </h3>
           </div>
           
           <div className="bg-[#020617]/50 p-4 border border-slate-800 rounded">
             <p className="text-xs text-slate-400 font-mono mb-2">Project Details:</p>
             <div className="flex gap-4">
-              {selectedReg.responses?.phase_3_submissions?.repoLink && (
-                <a href={selectedReg.responses.phase_3_submissions.repoLink} target="_blank" className="text-[#00f5ff] hover:underline text-sm font-mono">Repository</a>
+              {selectedSubmission?.repoLink && (
+                <a href={selectedSubmission.repoLink} target="_blank" className="text-[#00f5ff] hover:underline text-sm font-mono">Repository</a>
               )}
-              {selectedReg.responses?.phase_3_submissions?.demoLink && (
-                <a href={selectedReg.responses.phase_3_submissions.demoLink} target="_blank" className="text-[#00f5ff] hover:underline text-sm font-mono">Live Demo</a>
+              {selectedSubmission?.demoLink && (
+                <a href={selectedSubmission.demoLink} target="_blank" className="text-[#00f5ff] hover:underline text-sm font-mono">Live Demo</a>
               )}
               {/* Add file links (PDFs, etc) */}
-              {Object.entries(selectedReg.responses?.phase_3_submissions || {}).map(([key, val]) => {
+              {Object.entries(selectedSubmission || {}).map(([key, val]) => {
                 if (typeof val === 'string' && val.includes('cloudinary.com') && key !== 'banner') {
                   return (
                     <a key={key} href={val} target="_blank" className="text-[#00f5ff] hover:underline text-sm font-mono">Project PDF/Asset</a>
@@ -128,8 +172,8 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
                 return null;
               })}
             </div>
-            {selectedReg.responses?.phase_3_submissions?.description && (
-              <p className="text-sm text-slate-300 mt-3">{selectedReg.responses.phase_3_submissions.description}</p>
+            {selectedSubmission?.description && (
+              <p className="text-sm text-slate-300 mt-3">{selectedSubmission.description}</p>
             )}
           </div>
 
@@ -178,6 +222,8 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
           ) : (
             <div className="grid gap-3">
               {teams.map(t => {
+                const submission = getSubmission(t);
+                const teamFormation = getTeamFormation(t);
                 const isEvaluated = t.evaluations?.some(e => e.judgeEmail === user?.email);
                 return (
                   <button 
@@ -189,10 +235,10 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
                   >
                     <div>
                       <p className="font-bold text-white font-orbitron">
-                        {t.responses?.phase_3_submissions?.projectName || 'Unnamed Project'}
+                        {submission?.projectName || 'Unnamed Project'}
                       </p>
                       <p className="text-xs text-slate-500 font-mono mt-1">
-                        Team: {t.responses?.phase_2_team_formation?.teamName || 'Solo'}
+                        Team: {teamFormation?.teamName || 'Solo'}
                       </p>
                     </div>
                     <div className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${

@@ -10,6 +10,7 @@ import { fetchProgress, isPhaseUnlocked } from "@/store/hackathonStore";
 import { useAuth } from "@/hooks/useAuth";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import type { HackathonProgress, Hackathon } from "@/types/hackathon";
+import { API_BASE_URL } from "@/lib/site";
 
 export default function HackathonDetailPage() {
   const { loading: authLoading, user, error: authError } = useAuth();
@@ -28,7 +29,7 @@ export default function HackathonDetailPage() {
       setFetchError(null);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/hackathons/${hackathonId}`
+          `${API_BASE_URL}/hackathons/${hackathonId}`
         );
         if (!res.ok) throw new Error("Failed to retrieve mission data from terminal.");
         setHackathon(await res.json());
@@ -109,7 +110,7 @@ export default function HackathonDetailPage() {
     if (!user) return;
     setAcceptingJudge(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hackathons/${hackathon.id}/judges/accept`, {
+      const res = await fetch(`${API_BASE_URL}/hackathons/${hackathon.id}/judges/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email })

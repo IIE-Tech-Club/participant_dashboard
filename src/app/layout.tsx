@@ -6,6 +6,7 @@ import CustomCursor from "@/components/ui/CustomCursor";
 import Navbar from "@/components/layout/Navbar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import { SITE_URL, absoluteUrl, siteConfig } from "@/lib/site";
 
 // ✅ Proper font loading (Next.js optimized)
 import { Orbitron, Space_Grotesk, JetBrains_Mono, Charm, MedievalSharp } from "next/font/google";
@@ -42,21 +43,81 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CodeCraft — Student Dashboard",
-  description:
-    "The next-generation hackathon management platform for elite student developers.",
-  keywords: ["hackathon", "codecraft", "student", "developer", "competition"],
+  metadataBase: new URL(SITE_URL),
+  applicationName: siteConfig.name,
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.shortName}`,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.creator }],
+  creator: siteConfig.creator,
+  publisher: siteConfig.creator,
+  category: "technology",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: absoluteUrl("/"),
+    title: siteConfig.title,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
 };
 
 type RootLayoutProps = { children: ReactNode };
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    alternateName: siteConfig.shortName,
+    url: absoluteUrl("/"),
+    description: siteConfig.description,
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.creator,
+      url: absoluteUrl("/"),
+    },
+  };
+
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         suppressHydrationWarning
         className={`${orbitron.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${charm.variable} ${medievalSharp.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          }}
+        />
         <CustomCursor />
         <AuthProvider>
           <Navbar />

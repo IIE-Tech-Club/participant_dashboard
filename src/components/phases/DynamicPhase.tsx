@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Phase, Hackathon, PhaseField } from "@/types/hackathon";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import Loader from "@/components/ui/Loader";
+import { API_BASE_URL } from "@/lib/site";
 
 interface Props {
   hackathon: Hackathon;
@@ -199,7 +200,7 @@ export default function DynamicPhase({
     if (!teamName) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations/status/${hackathon.id}/${encodeURIComponent(teamName)}/${encodeURIComponent(email)}`);
+      const res = await fetch(`${API_BASE_URL}/invitations/status/${hackathon.id}/${encodeURIComponent(teamName)}/${encodeURIComponent(email)}`);
       if (res.ok) {
         const data = await res.json();
         setInvitationStatus(prev => {
@@ -223,7 +224,7 @@ export default function DynamicPhase({
 
     setInvitationStatus(prev => ({ ...prev, [memberId]: { ...prev[memberId], loading: true } }));
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations`, {
+      const res = await fetch(`${API_BASE_URL}/invitations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -252,7 +253,7 @@ export default function DynamicPhase({
       if (!existingResponse && phase.id === "phase_1_registration" && user) {
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/${user.uid}`,
+            `${API_BASE_URL}/users/${user.uid}`,
           );
           if (res.ok) {
             const data = await res.json();
@@ -292,7 +293,7 @@ export default function DynamicPhase({
     const fetchAcceptedTeam = async () => {
       if (!existingResponse && phase.id === "phase_2_team_formation" && user?.email) {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations/accepted/${hackathon.id}/${encodeURIComponent(user.email)}`);
+          const res = await fetch(`${API_BASE_URL}/invitations/accepted/${hackathon.id}/${encodeURIComponent(user.email)}`);
           if (res.ok) {
             const data = await res.json();
             if (data.found && data.invitation) {
@@ -309,7 +310,7 @@ export default function DynamicPhase({
     const fetchRegistration = async () => {
       if (user) {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/registrations/${hackathon.id}/user/${user.uid}`);
+          const res = await fetch(`${API_BASE_URL}/registrations/${hackathon.id}/user/${user.uid}`);
           if (res.ok) {
             const data = await res.json();
             if (data && data.uploadCounts) {
@@ -518,7 +519,7 @@ export default function DynamicPhase({
       if (data.secure_url) {
         // Increment count on backend
         try {
-          const countRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/registrations/upload-count`, {
+          const countRes = await fetch(`${API_BASE_URL}/registrations/upload-count`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

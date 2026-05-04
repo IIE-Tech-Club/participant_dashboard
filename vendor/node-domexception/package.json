@@ -1,0 +1,7 @@
+{
+  "name": "node-domexception",
+  "version": "1.0.0",
+  "description": "Compatibility shim that exports the platform-native DOMException.",
+  "main": "index.js",
+  "license": "MIT"
+}

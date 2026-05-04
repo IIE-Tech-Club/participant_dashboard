@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { API_BASE_URL } from "@/lib/site";
 
 interface Invitation {
   _id: string;
@@ -20,7 +21,7 @@ export default function NotificationBell() {
     const email = user?.email;
     if (!email) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations/user/${encodeURIComponent(email)}`);
+      const res = await fetch(`${API_BASE_URL}/invitations/user/${encodeURIComponent(email)}`);
       if (res.ok) {
         const data = await res.json();
         setInvitations(data);
@@ -38,7 +39,7 @@ export default function NotificationBell() {
       if (!email) return;
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/invitations/user/${encodeURIComponent(email)}`,
+          `${API_BASE_URL}/invitations/user/${encodeURIComponent(email)}`,
         );
         if (res.ok) {
           const data = await res.json();
@@ -59,7 +60,7 @@ export default function NotificationBell() {
   const handleResponse = async (id: string, action: 'accept' | 'reject') => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations/${id}/${action}`, {
+      const res = await fetch(`${API_BASE_URL}/invitations/${id}/${action}`, {
         method: "PUT"
       });
       if (res.ok) {

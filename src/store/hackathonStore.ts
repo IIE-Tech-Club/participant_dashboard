@@ -1,12 +1,11 @@
 "use client";
 
 import type { HackathonProgress } from "@/types/hackathon";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+import { API_BASE_URL } from "@/lib/site";
 
 export async function fetchProgress(hackathonId: string, userId: string): Promise<HackathonProgress> {
   try {
-    const response = await fetch(`${API_BASE}/registrations/${hackathonId}/user/${userId}`);
+    const response = await fetch(`${API_BASE_URL}/registrations/${hackathonId}/user/${userId}`);
     if (!response.ok) return { hackathonId, responses: {}, status: 'Pending' };
     const data = await response.json();
     if (!data) return { hackathonId, responses: {}, status: 'Pending' };
@@ -24,7 +23,7 @@ export async function fetchProgress(hackathonId: string, userId: string): Promis
 
 export async function commitPhase(hackathonId: string, userId: string, phaseId: string, data?: unknown): Promise<{ ok: boolean; message?: string }> {
   try {
-    const response = await fetch(`${API_BASE}/registrations`, {
+    const response = await fetch(`${API_BASE_URL}/registrations`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, hackathonId, phase: phaseId, data })

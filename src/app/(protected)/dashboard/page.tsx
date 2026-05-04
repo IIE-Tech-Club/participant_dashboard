@@ -9,6 +9,7 @@ import type { Hackathon, HackathonProgress } from "@/types/hackathon";
 import { signOutUser } from "@/lib/firebase/client";
 import Link from "next/link";
 import Image from "next/image";
+import { API_BASE_URL } from "@/lib/site";
 
 function DashboardSkeleton() {
   return (
@@ -69,7 +70,7 @@ export default function DashboardPage() {
     const fetchAll = async () => {
       setFetchError(null);
       try {
-        const hRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hackathons`);
+        const hRes = await fetch(`${API_BASE_URL}/hackathons`);
         if (!hRes.ok) throw new Error("Failed to retrieve mission log.");
         const hData = await hRes.json();
         setHackathons(hData);

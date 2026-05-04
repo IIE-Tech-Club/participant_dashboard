@@ -46,15 +46,6 @@ export default function AuthPage() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center" style={{ background: "var(--bg-void)" }}>
-        <div className="scanline-overlay" />
-        <Loader text="Verifying session..." />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-[calc(100vh-var(--nav-h))] flex items-center justify-center p-5 relative overflow-hidden" style={{ background: "var(--bg-void)" }}>
 
@@ -139,10 +130,10 @@ export default function AuthPage() {
             <button
               id="auth-google-btn"
               onClick={handleSignIn}
-              disabled={loading}
+              disabled={loading || authLoading}
               className="neon-btn-cyan w-full py-3.5 text-[11px] tracking-[0.2em]"
             >
-              {loading ? (
+              {loading || authLoading ? (
                 <span className="flex items-center justify-center gap-2.5 scale-75">
                   <Loader text="Initializing..." />
                 </span>

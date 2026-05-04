@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 import { siteConfig } from "@/lib/site";
 
-export const runtime = "edge";
 export const alt = "IIE Tech Club CodeCraft participant dashboard";
 export const size = {
   width: 1200,

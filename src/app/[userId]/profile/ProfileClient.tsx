@@ -35,12 +35,12 @@ export default function PublicProfileClient({
   };
 
   useEffect(() => {
-    if (initialProfile?.uid === userId) return;
-
+    // Always fetch fresh data on the client to ensure we have the latest updates (Stale-While-Revalidate)
     const fetchPublicProfile = async () => {
       try {
         const res = await fetch(
           `${API_BASE_URL}/users/${userId}`,
+          { cache: "no-store" }
         );
         if (!res.ok) {
           if (res.status === 404)
@@ -50,16 +50,19 @@ export default function PublicProfileClient({
         const data = await res.json();
         setProfile(data);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Network protocol failure.",
-        );
+        // Only set error if we don't already have initialProfile to show
+        if (!initialProfile) {
+          setError(
+            err instanceof Error ? err.message : "Network protocol failure.",
+          );
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchPublicProfile();
-  }, [initialProfile, userId]);
+  }, [userId, initialProfile]);
 
   if (loading) {
     return (

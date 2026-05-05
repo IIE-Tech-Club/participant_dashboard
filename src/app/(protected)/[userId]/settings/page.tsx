@@ -32,6 +32,7 @@ export default function ProfilePage() {
       try {
         const res = await fetch(
           `${API_BASE_URL}/users/${user.uid}`,
+          { cache: "no-store" }
         );
         if (!res.ok) throw new Error("Failed to load profile data.");
         const data = await res.json();

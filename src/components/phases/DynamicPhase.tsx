@@ -521,7 +521,10 @@ export default function DynamicPhase({
         try {
           const countRes = await fetch(`${API_BASE_URL}/registrations/upload-count`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              "x-uid": user?.uid || ""
+            },
             body: JSON.stringify({
               userId: user?.uid,
               hackathonId: hackathon.id,

@@ -25,7 +25,10 @@ export async function commitPhase(hackathonId: string, userId: string, phaseId: 
   try {
     const response = await fetch(`${API_BASE_URL}/registrations`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "x-uid": userId
+      },
       body: JSON.stringify({ userId, hackathonId, phase: phaseId, data })
     });
     

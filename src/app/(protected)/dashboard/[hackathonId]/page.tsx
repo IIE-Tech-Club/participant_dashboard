@@ -110,9 +110,13 @@ export default function HackathonDetailPage() {
     if (!user) return;
     setAcceptingJudge(true);
     try {
+      const idToken = await user.getIdToken();
       const res = await fetch(`${API_BASE_URL}/hackathons/${hackathon.id}/judges/accept`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
         body: JSON.stringify({ email: user.email })
       });
       if (res.ok) {

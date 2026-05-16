@@ -44,17 +44,6 @@ function getTeamFormation(registration: Registration) {
     | undefined;
 }
 
-async function fetchTeamsForHackathon(hackathonId: string) {
-  const res = await fetch(`${API_BASE_URL}/registrations/${hackathonId}`);
-  if (!res.ok) return [];
-
-  const data = await res.json();
-  // Only consider registrations with submissions
-  return (data as Registration[]).filter((registration) =>
-    Boolean(getSubmission(registration)),
-  );
-}
-
 export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
   const { user } = useAuth();
   const [teams, setTeams] = useState<Registration[]>([]);
@@ -64,25 +53,34 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
   const [feedback, setFeedback] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const fetchTeams = async () => {
+    if (!user) return;
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch(`${API_BASE_URL}/registrations/${hackathon.id}`, {
+        headers: {
+          "Authorization": `Bearer ${idToken}`
+        }
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const withSubmissions = (data as Registration[]).filter((registration) =>
+        Boolean(getSubmission(registration)),
+      );
+      setTeams(withSubmissions);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
-
-    const loadTeams = async () => {
-      try {
-        const withSubmissions = await fetchTeamsForHackathon(hackathon.id);
-        if (!cancelled) setTeams(withSubmissions);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    loadTeams();
-    return () => {
-      cancelled = true;
-    };
-  }, [hackathon.id]);
+    if (user) {
+      fetchTeams();
+    }
+  }, [hackathon.id, user]);
 
   const handleScoreChange = (param: string, value: number) => {
     setScores(prev => ({ ...prev, [param]: value }));
@@ -92,9 +90,13 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
     if (!selectedReg || !user) return;
     setSubmitting(true);
     try {
+      const idToken = await user.getIdToken();
       const res = await fetch(`${API_BASE_URL}/registrations/evaluate/${selectedReg._id}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
         body: JSON.stringify({
           judgeEmail: user.email,
           scores,
@@ -105,8 +107,7 @@ export default function JudgePanel({ hackathon }: { hackathon: Hackathon }) {
         setSelectedReg(null);
         setScores({});
         setFeedback("");
-        const refreshedTeams = await fetchTeamsForHackathon(hackathon.id);
-        setTeams(refreshedTeams);
+        await fetchTeams();
       }
     } catch (err) {
       console.error(err);

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { commitPhase } from "@/store/hackathonStore";
 import { useAuth } from "@/hooks/useAuth";
-import type { Phase, Hackathon, PhaseField } from "@/types/hackathon";
+import type { Phase, Hackathon } from "@/types/hackathon";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import Loader from "@/components/ui/Loader";
 import { API_BASE_URL } from "@/lib/site";
@@ -183,7 +183,9 @@ export default function DynamicPhase({
   const [systemError, setSystemError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
-  const [invitationStatus, setInvitationStatus] = useState<Record<string, { status: string; loading?: boolean }>>({});
+  const [invitationStatus, setInvitationStatus] = useState<
+    Record<string, { status: string; loading?: boolean }>
+  >({});
   const [acceptedTeam, setAcceptedTeam] = useState<string | null>(null);
   const [checkingAccepted, setCheckingAccepted] = useState(true);
   const [uploadCounts, setUploadCounts] = useState<Record<string, number>>({});
@@ -191,70 +193,109 @@ export default function DynamicPhase({
   // Refs to avoid unnecessary effect triggers
   const formRef = useRef(form);
   const statusRef = useRef(invitationStatus);
-  useEffect(() => { formRef.current = form; }, [form]);
-  useEffect(() => { statusRef.current = invitationStatus; }, [invitationStatus]);
 
-  const checkInvitationStatus = useCallback(async (email: string, memberId: string) => {
-    if (!email || !email.includes("@")) return;
-    const teamName = form.teamName as string;
-    if (!teamName) return;
+  // Sync form when existingResponse changes (e.g. teammate submitted and polling picked it up)
+  useEffect(() => {
+    if (existingResponse) {
+      setForm(existingResponse);
+    }
+  }, [existingResponse]);
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/invitations/status/${hackathon.id}/${encodeURIComponent(teamName)}/${encodeURIComponent(email)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setInvitationStatus(prev => {
-          // Only update if the status has actually changed to avoid unnecessary renders
-          if (prev[memberId]?.status === data.status) return prev;
-          return { ...prev, [memberId]: { status: data.status } };
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
+  useEffect(() => {
+    statusRef.current = invitationStatus;
+  }, [invitationStatus]);
+
+  const checkInvitationStatus = useCallback(
+    async (email: string, memberId: string) => {
+      if (!email || !email.includes("@")) return;
+      const teamName = form.teamName as string;
+      if (!teamName) return;
+
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/invitations/status/${hackathon.id}/${encodeURIComponent(teamName)}/${encodeURIComponent(email)}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setInvitationStatus((prev) => {
+            // Only update if the status has actually changed to avoid unnecessary renders
+            if (prev[memberId]?.status === data.status) return prev;
+            return { ...prev, [memberId]: { status: data.status } };
+          });
+        }
+      } catch (err) {
+        console.error("Failed to check status", err);
+      }
+    },
+    [hackathon.id, form.teamName],
+  );
+
+  const handleInvite = useCallback(
+    async (email: string, memberId: string) => {
+      if (!user || !user.email) return;
+      const teamName = form.teamName as string;
+      if (!teamName) {
+        setErrors((prev) => ({
+          ...prev,
+          [memberId]: "Please enter a Team Name first",
+        }));
+        return;
+      }
+
+      setInvitationStatus((prev) => ({
+        ...prev,
+        [memberId]: { ...prev[memberId], loading: true },
+      }));
+      try {
+        const res = await fetch(`${API_BASE_URL}/invitations`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            hackathonId: hackathon.id,
+            teamName,
+            inviterEmail: user.email,
+            inviteeEmail: email,
+          }),
         });
+        const data = await res.json();
+        if (res.ok) {
+          setInvitationStatus((prev) => ({
+            ...prev,
+            [memberId]: {
+              status: data.invitation?.status || "pending",
+              loading: false,
+            },
+          }));
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            [memberId]: data.message || "Failed to invite",
+          }));
+          setInvitationStatus((prev) => ({
+            ...prev,
+            [memberId]: { ...prev[memberId], loading: false },
+          }));
+        }
+      } catch (err) {
+        console.error("Invite error", err);
+        setErrors((prev) => ({ ...prev, [memberId]: "Network error" }));
+        setInvitationStatus((prev) => ({
+          ...prev,
+          [memberId]: { ...prev[memberId], loading: false },
+        }));
       }
-    } catch (err) {
-      console.error("Failed to check status", err);
-    }
-  }, [hackathon.id, form.teamName]);
-
-  const handleInvite = useCallback(async (email: string, memberId: string) => {
-    if (!user || !user.email) return;
-    const teamName = form.teamName as string;
-    if (!teamName) {
-      setErrors(prev => ({ ...prev, [memberId]: "Please enter a Team Name first" }));
-      return;
-    }
-
-    setInvitationStatus(prev => ({ ...prev, [memberId]: { ...prev[memberId], loading: true } }));
-    try {
-      const res = await fetch(`${API_BASE_URL}/invitations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          hackathonId: hackathon.id,
-          teamName,
-          inviterEmail: user.email,
-          inviteeEmail: email
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setInvitationStatus(prev => ({ ...prev, [memberId]: { status: data.invitation?.status || 'pending', loading: false } }));
-      } else {
-        setErrors(prev => ({ ...prev, [memberId]: data.message || "Failed to invite" }));
-        setInvitationStatus(prev => ({ ...prev, [memberId]: { ...prev[memberId], loading: false } }));
-      }
-    } catch (err) {
-      console.error("Invite error", err);
-      setErrors(prev => ({ ...prev, [memberId]: "Network error" }));
-      setInvitationStatus(prev => ({ ...prev, [memberId]: { ...prev[memberId], loading: false } }));
-    }
-  }, [user, hackathon.id, form.teamName]);
+    },
+    [user, hackathon.id, form.teamName],
+  );
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!existingResponse && phase.id === "phase_1_registration" && user) {
         try {
-          const res = await fetch(
-            `${API_BASE_URL}/users/${user.uid}`,
-          );
+          const res = await fetch(`${API_BASE_URL}/users/${user.uid}`);
           if (res.ok) {
             const data = await res.json();
             setForm((prev) => ({
@@ -291,9 +332,15 @@ export default function DynamicPhase({
     };
 
     const fetchAcceptedTeam = async () => {
-      if (!existingResponse && phase.id === "phase_2_team_formation" && user?.email) {
+      if (
+        !existingResponse &&
+        phase.id === "phase_2_team_formation" &&
+        user?.email
+      ) {
         try {
-          const res = await fetch(`${API_BASE_URL}/invitations/accepted/${hackathon.id}/${encodeURIComponent(user.email)}`);
+          const res = await fetch(
+            `${API_BASE_URL}/invitations/accepted/${hackathon.id}/${encodeURIComponent(user.email)}`,
+          );
           if (res.ok) {
             const data = await res.json();
             if (data.found && data.invitation) {
@@ -310,7 +357,9 @@ export default function DynamicPhase({
     const fetchRegistration = async () => {
       if (user) {
         try {
-          const res = await fetch(`${API_BASE_URL}/registrations/${hackathon.id}/user/${user.uid}`);
+          const res = await fetch(
+            `${API_BASE_URL}/registrations/${hackathon.id}/user/${user.uid}`,
+          );
           if (res.ok) {
             const data = await res.json();
             if (data && data.uploadCounts) {
@@ -343,7 +392,7 @@ export default function DynamicPhase({
   }, [form, user, hackathon.id, phase.id, isCompleted, isDirty]);
 
   const hStatus = isHackathonActive(hackathon);
-  const pStatus = phase.isMandatory ? { active: true } : isPhaseActive(phase);
+  const pStatus = isPhaseActive(phase);
   const isLocked = !hStatus.active || !pStatus.active;
   const lockReason = !hStatus.active
     ? (hStatus as { reason?: string }).reason
@@ -351,7 +400,7 @@ export default function DynamicPhase({
 
   const validate = () => {
     if (acceptedTeam) return true; // Bypass validation for accepted members
-    
+
     const e: Record<string, string> = {};
     phase.fields?.forEach((f) => {
       if ((f.type as string) === "content") return;
@@ -378,14 +427,22 @@ export default function DynamicPhase({
   };
 
   useEffect(() => {
-    if (phase.id === "phase_2_team_formation" && Number(formRef.current.teamSize) > 1) {
+    if (
+      phase.id === "phase_2_team_formation" &&
+      Number(formRef.current.teamSize) > 1
+    ) {
       const timer = setTimeout(() => {
         const currentForm = formRef.current;
         const currentStatus = statusRef.current;
         for (let i = 1; i < Number(currentForm.teamSize); i++) {
           const memberId = `memberEmail_${i}`;
           const email = String(currentForm[memberId] ?? "");
-          if (email.includes("@") && email.includes(".") && (!currentStatus[memberId] || currentStatus[memberId].status === 'none')) {
+          if (
+            email.includes("@") &&
+            email.includes(".") &&
+            (!currentStatus[memberId] ||
+              currentStatus[memberId].status === "none")
+          ) {
             checkInvitationStatus(email, memberId);
           }
         }
@@ -396,14 +453,20 @@ export default function DynamicPhase({
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (phase.id === "phase_2_team_formation" && Number(formRef.current.teamSize) > 1) {
+    if (
+      phase.id === "phase_2_team_formation" &&
+      Number(formRef.current.teamSize) > 1
+    ) {
       interval = setInterval(() => {
         const currentForm = formRef.current;
         const currentStatus = statusRef.current;
         for (let i = 1; i < Number(currentForm.teamSize); i++) {
           const memberId = `memberEmail_${i}`;
           const email = String(currentForm[memberId] ?? "");
-          if (email.includes("@") && currentStatus[memberId]?.status === 'pending') {
+          if (
+            email.includes("@") &&
+            currentStatus[memberId]?.status === "pending"
+          ) {
             checkInvitationStatus(email, memberId);
           }
         }
@@ -415,14 +478,20 @@ export default function DynamicPhase({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    
+
     // Enforce invitation acceptance
-    if (!acceptedTeam && phase.id === "phase_2_team_formation" && Number(form.teamSize) > 1) {
+    if (
+      !acceptedTeam &&
+      phase.id === "phase_2_team_formation" &&
+      Number(form.teamSize) > 1
+    ) {
       for (let i = 1; i < Number(form.teamSize); i++) {
         const memberId = `memberEmail_${i}`;
         const statusObj = invitationStatus[memberId];
-        if (!statusObj || statusObj.status !== 'accepted') {
-          setSystemError(`Cannot proceed until all invited squad members have accepted their invitations (Member ${i + 1} is pending/rejected).`);
+        if (!statusObj || statusObj.status !== "accepted") {
+          setSystemError(
+            `Cannot proceed until all invited squad members have accepted their invitations (Member ${i + 1} is pending/rejected).`,
+          );
           return;
         }
       }
@@ -432,16 +501,21 @@ export default function DynamicPhase({
     setSystemError(null);
     try {
       if (!user) throw new Error("Authentication node not found.");
-      
+
       let submissionData = { ...form };
       if (acceptedTeam) {
         submissionData = { teamName: acceptedTeam };
       }
 
-      const res = await commitPhase(hackathon.id, user.uid, phase.id, submissionData);
+      const res = await commitPhase(
+        hackathon.id,
+        user.uid,
+        phase.id,
+        submissionData,
+      );
       if (!res.ok)
         throw new Error(res.message || "Protocol rejection from server.");
-      
+
       // Clear draft on success
       const draftKey = `draft_${hackathon.id}_${user.uid}_${phase.id}`;
       localStorage.removeItem(draftKey);
@@ -459,17 +533,22 @@ export default function DynamicPhase({
   const updateField = (field: string, value: string | boolean | number) => {
     setForm((f) => ({ ...f, [field]: value }));
     setErrors((e) => ({ ...e, [field]: "" }));
-    
+
     // Check status dynamically if email changes
-    if (field.startsWith("memberEmail_") && typeof value === "string" && value.includes("@") && value.includes(".")) {
-       checkInvitationStatus(value, field);
+    if (
+      field.startsWith("memberEmail_") &&
+      typeof value === "string" &&
+      value.includes("@") &&
+      value.includes(".")
+    ) {
+      checkInvitationStatus(value, field);
     } else if (field.startsWith("memberEmail_")) {
-       // reset status if invalid
-       setInvitationStatus(prev => {
-          const newStatus = { ...prev };
-          delete newStatus[field];
-          return newStatus;
-       });
+      // reset status if invalid
+      setInvitationStatus((prev) => {
+        const newStatus = { ...prev };
+        delete newStatus[field];
+        return newStatus;
+      });
     }
   };
 
@@ -486,7 +565,10 @@ export default function DynamicPhase({
     const countKey = `${phase.id}_${fieldId}`;
     const currentCount = uploadCounts[countKey] || 0;
     if (currentCount >= 3) {
-      setErrors((e) => ({ ...e, [fieldId]: "Upload limit reached (3/3). Transmission locked." }));
+      setErrors((e) => ({
+        ...e,
+        [fieldId]: "Upload limit reached (3/3). Transmission locked.",
+      }));
       return;
     }
 
@@ -500,7 +582,9 @@ export default function DynamicPhase({
       return;
     }
     const isPDF = file.type === "application/pdf";
-    const fixedFile = isPDF ? new File([file], file.name, { type: "application/pdf" }) : file;
+    const fixedFile = isPDF
+      ? new File([file], file.name, { type: "application/pdf" })
+      : file;
 
     const fd = new FormData();
     fd.append("file", fixedFile);
@@ -511,35 +595,44 @@ export default function DynamicPhase({
     fd.append("folder", `hackathons/${hackathon.id}/submissions`);
 
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/${resourceType}/upload`, {
-        method: "POST",
-        body: fd,
-      });
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cn}/${resourceType}/upload`,
+        {
+          method: "POST",
+          body: fd,
+        },
+      );
       const data = await res.json();
       if (data.secure_url) {
         // Increment count on backend
         try {
-          const countRes = await fetch(`${API_BASE_URL}/registrations/upload-count`, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-              "x-uid": user?.uid || ""
+          const countRes = await fetch(
+            `${API_BASE_URL}/registrations/upload-count`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-uid": user?.uid || "",
+              },
+              body: JSON.stringify({
+                userId: user?.uid,
+                hackathonId: hackathon.id,
+                phaseId: phase.id,
+                fieldId: fieldId,
+              }),
             },
-            body: JSON.stringify({
-              userId: user?.uid,
-              hackathonId: hackathon.id,
-              phaseId: phase.id,
-              fieldId: fieldId
-            })
-          });
+          );
           if (countRes.ok) {
             const countData = await countRes.json();
-            setUploadCounts(prev => ({ ...prev, [countKey]: countData.count }));
+            setUploadCounts((prev) => ({
+              ...prev,
+              [countKey]: countData.count,
+            }));
           }
         } catch (err) {
           console.error("Failed to sync upload count", err);
         }
-        
+
         updateField(fieldId, data.secure_url);
       } else throw new Error(data.error?.message || "Upload failed");
     } catch (err: unknown) {
@@ -552,7 +645,11 @@ export default function DynamicPhase({
 
   const phaseIdx = phases.findIndex((p) => p.id === phase.id);
 
-  if (checkingAccepted && phase.id === "phase_2_team_formation" && !existingResponse) {
+  if (
+    checkingAccepted &&
+    phase.id === "phase_2_team_formation" &&
+    !existingResponse
+  ) {
     return (
       <div className="w-full flex items-center justify-center p-12">
         <Loader text="VERIFYING SQUAD CREDENTIALS..." />
@@ -651,28 +748,54 @@ export default function DynamicPhase({
               Response Logged
             </p>
             <p className="font-mono-cc text-[11px] text-[rgba(224,247,255,0.45)] leading-relaxed">
-              Your submission has been recorded. You may update your information at any time until the phase deadline.
+              Your submission has been recorded. You may update your information
+              at any time until the phase deadline.
             </p>
           </div>
         </div>
       )}
 
       {/* Accepted Team Read-Only View */}
-      {acceptedTeam && !isCompleted ? (
+      {isLocked && !isCompleted ? null : acceptedTeam && !isCompleted ? (
         <div className="space-y-6">
           <div className="glass-card p-6 border-emerald-500/30 bg-emerald-900/10">
             <h3 className="text-lg font-orbitron font-bold text-emerald-400 mb-2 uppercase tracking-widest flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
               Squad Assignment Confirmed
             </h3>
-            <p className="text-sm font-mono text-slate-300">You have successfully accepted the invitation to join squad: <span className="font-bold text-white text-base ml-1">{acceptedTeam}</span>.</p>
-            <p className="text-xs font-mono text-slate-500 mt-4">No further formation data is required. Click proceed to formalize your registry and link your profile to this squad.</p>
+            <p className="text-sm font-mono text-slate-300">
+              You have successfully accepted the invitation to join squad:{" "}
+              <span className="font-bold text-white text-base ml-1">
+                {acceptedTeam}
+              </span>
+              .
+            </p>
+            <p className="text-xs font-mono text-slate-500 mt-4">
+              No further formation data is required. Click proceed to formalize
+              your registry and link your profile to this squad.
+            </p>
           </div>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="pt-4 flex justify-end">
               <button type="submit" disabled={saving} className="btn-primary">
-                {saving ? <Loader text="COMMITTING..." /> : "PROCEED TO NEXT PHASE"}
+                {saving ? (
+                  <Loader text="COMMITTING..." />
+                ) : (
+                  "PROCEED TO NEXT PHASE"
+                )}
               </button>
             </div>
           </form>
@@ -680,468 +803,501 @@ export default function DynamicPhase({
       ) : (
         /* Form */
         <form onSubmit={handleSubmit}>
-        <div className="glass-card p-6 lg:p-8 space-y-7">
-          {/* Form Fields */}
-          {(() => {
-            const displayFields = [...(phase.fields || [])];
-            
-            // Inject GitHub and LinkedIn if it's the registration phase and they are missing
-            if (phase.id === "phase_1_registration") {
-              if (!displayFields.some(f => f.id === "github")) {
-                displayFields.push({
-                  id: "github",
-                  label: "GitHub Profile URL",
-                  type: "url",
-                  required: true
-                } as PhaseField);
-              }
-              if (!displayFields.some(f => f.id === "linkedin")) {
-                displayFields.push({
-                  id: "linkedin",
-                  label: "LinkedIn Profile URL",
-                  type: "url",
-                  required: true
-                } as PhaseField);
-              }
-            }
+          <div className="glass-card p-6 lg:p-8 space-y-7">
+            {/* Form Fields */}
+            {(() => {
+              const displayFields = [...(phase.fields || [])];
 
-            return (
-              <div className="space-y-7">
-                {displayFields.map((field) => (
-                  <div key={field.id}>
-                  {/* Content block */}
-                  {(field.type as string) === "content" ? (
-                    <div className="relative p-5 border border-[rgba(0,245,255,0.12)] bg-[rgba(0,245,255,0.03)] overflow-hidden">
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[rgba(0,245,255,0.35)]" />
-                      <div className="pl-2">
-                        <ReactMarkdown
-                          components={{
-                            p: ({ ...p }) => (
-                              <p
-                                className="mb-2 last:mb-0 font-mono-cc text-xs text-[rgba(224,247,255,0.5)] leading-relaxed"
-                                {...p}
-                              />
-                            ),
-                            a: ({ ...p }) => (
-                              <a
-                                className="text-[#00f5ff] underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                {...p}
-                              />
-                            ),
-                            strong: ({ ...p }) => (
-                              <strong
-                                className="text-[rgba(224,247,255,0.8)]"
-                                {...p}
-                              />
-                            ),
-                          }}
-                        >
-                          {field.label}
-                        </ReactMarkdown>
-                      </div>
-                    </div>
-                  ) : field.type === "checkbox" ? (
-                    <label
-                      className={`flex items-start gap-3 cursor-pointer group ${isLocked ? "opacity-40 pointer-events-none" : ""}`}
-                    >
-                      <div className="relative shrink-0 mt-0.5">
-                        <input
-                          type="checkbox"
-                          checked={!!form[field.id]}
-                          onChange={(e) =>
-                            updateField(field.id, e.target.checked)
-                          }
-                          className="sr-only"
-                          disabled={isLocked}
-                        />
-                        <div
-                          className={`w-5 h-5 border transition-all duration-200 flex items-center justify-center ${
-                            form[field.id]
-                              ? "bg-[#00f5ff] border-[#00f5ff]"
-                              : "border-[rgba(224,247,255,0.2)] group-hover:border-[rgba(0,245,255,0.5)]"
-                          }`}
-                        >
-                          {form[field.id] && (
-                            <svg
-                              width="10"
-                              height="10"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="#040b14"
-                              strokeWidth="3.5"
+              return (
+                <div className="space-y-7">
+                  {displayFields.map((field) => (
+                    <div key={field.id}>
+                      {/* Content block */}
+                      {(field.type as string) === "content" ? (
+                        <div className="relative p-5 border border-[rgba(0,245,255,0.12)] bg-[rgba(0,245,255,0.03)] overflow-hidden">
+                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[rgba(0,245,255,0.35)]" />
+                          <div className="pl-2">
+                            <ReactMarkdown
+                              components={{
+                                p: ({ ...p }) => (
+                                  <p
+                                    className="mb-2 last:mb-0 font-mono-cc text-xs text-[rgba(224,247,255,0.5)] leading-relaxed"
+                                    {...p}
+                                  />
+                                ),
+                                a: ({ ...p }) => (
+                                  <a
+                                    className="text-[#00f5ff] underline"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    {...p}
+                                  />
+                                ),
+                                strong: ({ ...p }) => (
+                                  <strong
+                                    className="text-[rgba(224,247,255,0.8)]"
+                                    {...p}
+                                  />
+                                ),
+                              }}
                             >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
+                              {field.label}
+                            </ReactMarkdown>
+                          </div>
                         </div>
-                      </div>
-                      <span className="font-mono-cc text-sm text-[rgba(224,247,255,0.7)] group-hover:text-[rgba(224,247,255,0.9)] transition-colors leading-relaxed">
-                        <ReactMarkdown
-                          components={{
-                            p: ({ ...p }) => <span {...p} />,
-                            a: ({ ...p }) => (
-                              <a
-                                className="text-[#00f5ff] underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                {...p}
-                              />
-                            ),
-                            strong: ({ ...p }) => (
-                              <strong className="text-white" {...p} />
-                            ),
-                          }}
+                      ) : field.type === "checkbox" ? (
+                        <label
+                          className={`flex items-start gap-3 cursor-pointer group ${isLocked ? "opacity-40 pointer-events-none" : ""}`}
                         >
-                          {field.label}
-                        </ReactMarkdown>
-                        {field.required && (
-                          <span className="text-[#00f5ff] ml-1">*</span>
-                        )}
-                      </span>
-                    </label>
-                  ) : field.type === "textarea" ? (
-                    <>
-                      <FieldLabel
-                        label={field.label}
-                        required={field.required}
-                      />
-                      <textarea
-                        value={String(form[field.id] ?? "")}
-                        onChange={(e) => updateField(field.id, e.target.value)}
-                        className="input-field min-h-[110px] resize-y"
-                        disabled={isLocked}
-                        placeholder="Enter your response..."
-                      />
-                    </>
-                  ) : field.type === "select" ? (
-                    <>
-                      <FieldLabel
-                        label={field.label}
-                        required={field.required}
-                      />
-                      <select
-                        value={String(form[field.id] ?? "")}
-                        onChange={(e) => updateField(field.id, e.target.value)}
-                        className="input-field"
-                        disabled={isLocked}
-                      >
-                        <option value="">Select an option</option>
-                        {field.options?.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    </>
-                  ) : field.type === "radio" ? (
-                    <>
-                      <FieldLabel
-                        label={field.label}
-                        required={field.required}
-                      />
-                      <div className="mt-3 space-y-2.5">
-                        {field.options?.map((opt) => (
-                          <label
-                            key={opt}
-                            className={`flex items-center gap-3 cursor-pointer group ${isLocked ? "opacity-40 pointer-events-none" : ""}`}
-                          >
-                            <div className="relative shrink-0">
-                              <input
-                                type="radio"
-                                name={field.id}
-                                checked={form[field.id] === opt}
-                                onChange={() => updateField(field.id, opt)}
-                                className="sr-only"
-                                disabled={isLocked}
-                              />
-                              <div
-                                className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center ${
-                                  form[field.id] === opt
-                                    ? "border-[#00f5ff]"
-                                    : "border-[rgba(224,247,255,0.2)] group-hover:border-[rgba(0,245,255,0.4)]"
-                                }`}
-                              >
-                                {form[field.id] === opt && (
-                                  <div className="w-2 h-2 rounded-full bg-[#00f5ff]" />
-                                )}
-                              </div>
-                            </div>
-                            <span className="font-mono-cc text-sm text-[rgba(224,247,255,0.7)] group-hover:text-[rgba(224,247,255,0.9)] transition-colors">
-                              {opt}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </>
-                  ) : field.type === "file" ? (
-                    <>
-                      <FieldLabel
-                        label={field.label}
-                        required={field.required}
-                      />
-                      <div className="mt-2 relative group">
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f) uploadPDF(field.id, f);
-                          }}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
-                          disabled={isLocked || !!uploadingField || (uploadCounts[`${phase.id}_${field.id}`] || 0) >= 3}
-                        />
-                        <div
-                          className={`w-full border border-dashed transition-all py-8 flex flex-col items-center justify-center gap-2 ${
-                            uploadingField === field.id
-                              ? "border-[rgba(0,245,255,0.5)] bg-[rgba(0,245,255,0.05)]"
-                              : "border-[rgba(0,245,255,0.2)] group-hover:border-[rgba(0,245,255,0.45)] group-hover:bg-[rgba(0,245,255,0.03)]"
-                          }`}
-                        >
-                          {uploadingField === field.id ? (
-                            <>
-                              <div className="scale-50 h-6 flex items-center justify-center">
-                                <Loader text="" />
-                              </div>
-                              <span className="font-mono-cc text-[10px] text-[#00f5ff] uppercase tracking-widest animate-pulse">
-                                Uploading...
-                              </span>
-                            </>
-                          ) : form[field.id] ? (
-                            <div className="flex flex-col items-center gap-3 relative z-20">
-                              <div className="flex items-center gap-2">
+                          <div className="relative shrink-0 mt-0.5">
+                            <input
+                              type="checkbox"
+                              checked={!!form[field.id]}
+                              onChange={(e) =>
+                                updateField(field.id, e.target.checked)
+                              }
+                              className="sr-only"
+                              disabled={isLocked}
+                            />
+                            <div
+                              className={`w-5 h-5 border transition-all duration-200 flex items-center justify-center ${
+                                form[field.id]
+                                  ? "bg-[#00f5ff] border-[#00f5ff]"
+                                  : "border-[rgba(224,247,255,0.2)] group-hover:border-[rgba(0,245,255,0.5)]"
+                              }`}
+                            >
+                              {form[field.id] && (
                                 <svg
-                                  width="18"
-                                  height="18"
+                                  width="10"
+                                  height="10"
                                   viewBox="0 0 24 24"
                                   fill="none"
-                                  stroke="#10b981"
-                                  strokeWidth="2.5"
+                                  stroke="#040b14"
+                                  strokeWidth="3.5"
                                 >
                                   <polyline points="20 6 9 17 4 12" />
                                 </svg>
-                                <span className="font-mono-cc text-[10px] text-[#10b981] uppercase tracking-widest font-bold">
-                                  Packet_Received
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <a
-                                  href={String(form[field.id])}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="px-4 py-1.5 bg-[rgba(16,185,129,0.1)] hover:bg-[rgba(16,185,129,0.2)] text-[#10b981] border border-[rgba(16,185,129,0.3)] font-orbitron font-bold text-[9px] uppercase tracking-widest transition-all"
-                                >
-                                  Preview File
-                                </a>
-                                <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)]">
-                                  | {3 - (uploadCounts[`${phase.id}_${field.id}`] || 0)} attempts left
-                                </span>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="rgba(0,245,255,0.4)"
-                                strokeWidth="2"
-                                className="group-hover:stroke-[rgba(0,245,255,0.7)] transition-colors"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
-                                />
-                              </svg>
-                              <span className="font-mono-cc text-xs text-[rgba(224,247,255,0.4)]">
-                                {(uploadCounts[`${phase.id}_${field.id}`] || 0) >= 3 ? "Transmission Locked" : "Upload PDF Document"}
-                              </span>
-                              <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)] uppercase tracking-widest">
-                                Max 10MB • Attempts: {uploadCounts[`${phase.id}_${field.id}`] || 0}/3
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <FieldLabel
-                        label={field.label}
-                        required={field.required}
-                      />
-                      <input
-                        type={field.type}
-                        value={String(form[field.id] ?? "")}
-                        onChange={(e) => updateField(field.id, e.target.value)}
-                        className={`input-field ${phase.id === "phase_1_registration" && field.id === "email" ? "opacity-50 cursor-not-allowed" : ""}`}
-                        disabled={isLocked}
-                        readOnly={
-                          phase.id === "phase_1_registration" &&
-                          field.id === "email"
-                        }
-                        placeholder={`Enter ${field.label.toLowerCase()}...`}
-                      />
-                    </>
-                  )}
-
-                  {errors[field.id] && (
-                    <p className="font-mono-cc text-[10px] text-[#f43f5e] mt-1.5 flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[#f43f5e] shrink-0" />
-                      {errors[field.id]}
-                    </p>
-                  )}
-
-                  {/* Dynamic Member Emails */}
-                  {field.id === "teamSize" && Number(form[field.id]) > 1 && (
-                    <div className="mt-6 space-y-6 pl-4 border-l-2 border-[rgba(0,245,255,0.15)] animate-fade-down">
-                      <p className="font-orbitron font-bold text-[10px] text-[rgba(0,245,255,0.6)] uppercase tracking-widest mb-4">
-                        Squad Member Authentication
-                      </p>
-                      {Array.from({ length: Number(form[field.id]) - 1 }).map(
-                        (_, i) => {
-                          const memberId = `memberEmail_${i + 1}`;
-                          return (
-                            <div key={memberId}>
-                              <FieldLabel
-                                label={`Member ${i + 2} Gmail`}
-                                required={true}
-                              />
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type="email"
-                                  value={String(form[memberId] ?? "")}
-                                  onChange={(e) =>
-                                    updateField(memberId, e.target.value)
-                                  }
-                                  className="input-field flex-1"
-                                  disabled={isLocked}
-                                  placeholder={`Enter member ${i + 2}'s gmail...`}
-                                />
-                                {String(form[memberId]).includes("@") && (
-                                  <div className="shrink-0 flex items-center">
-                                    {(!invitationStatus[memberId] || invitationStatus[memberId].status === 'none') ? (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleInvite(String(form[memberId]), memberId)}
-                                        disabled={invitationStatus[memberId]?.loading || isLocked}
-                                        className="px-4 py-2 bg-cyan-500/20 text-cyan-400 font-bold font-orbitron text-[10px] uppercase tracking-widest border border-cyan-500/30 hover:bg-cyan-500/30 transition-colors disabled:opacity-50"
-                                      >
-                                        {invitationStatus[memberId]?.loading ? "Sending..." : "Invite"}
-                                      </button>
-                                    ) : invitationStatus[memberId].status === 'accepted' ? (
-                                      <div className="px-4 py-2 border font-bold font-orbitron text-[10px] uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                                        accepted
-                                      </div>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleInvite(String(form[memberId]), memberId)}
-                                        disabled={invitationStatus[memberId]?.loading || isLocked}
-                                        className={`px-4 py-2 font-bold font-orbitron text-[10px] uppercase tracking-widest border transition-colors disabled:opacity-50 ${
-                                          invitationStatus[memberId].status === 'rejected' 
-                                            ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 hover:bg-rose-500/30' 
-                                            : 'bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30'
-                                        }`}
-                                      >
-                                        {invitationStatus[memberId]?.loading ? "Resending..." : "Resend"}
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              {errors[memberId] && (
-                                <p className="font-mono-cc text-[10px] text-[#f43f5e] mt-1.5 flex items-center gap-1.5">
-                                  <span className="w-1 h-1 rounded-full bg-[#f43f5e] shrink-0" />
-                                  {errors[memberId]}
-                                </p>
                               )}
                             </div>
-                          );
-                        },
+                          </div>
+                          <span className="font-mono-cc text-sm text-[rgba(224,247,255,0.7)] group-hover:text-[rgba(224,247,255,0.9)] transition-colors leading-relaxed">
+                            <ReactMarkdown
+                              components={{
+                                p: ({ ...p }) => <span {...p} />,
+                                a: ({ ...p }) => (
+                                  <a
+                                    className="text-[#00f5ff] underline"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    {...p}
+                                  />
+                                ),
+                                strong: ({ ...p }) => (
+                                  <strong className="text-white" {...p} />
+                                ),
+                              }}
+                            >
+                              {field.label}
+                            </ReactMarkdown>
+                            {field.required && (
+                              <span className="text-[#00f5ff] ml-1">*</span>
+                            )}
+                          </span>
+                        </label>
+                      ) : field.type === "textarea" ? (
+                        <>
+                          <FieldLabel
+                            label={field.label}
+                            required={field.required}
+                          />
+                          <textarea
+                            value={String(form[field.id] ?? "")}
+                            onChange={(e) =>
+                              updateField(field.id, e.target.value)
+                            }
+                            className="input-field min-h-[110px] resize-y"
+                            disabled={isLocked}
+                            placeholder="Enter your response..."
+                          />
+                        </>
+                      ) : field.type === "select" ? (
+                        <>
+                          <FieldLabel
+                            label={field.label}
+                            required={field.required}
+                          />
+                          <select
+                            value={String(form[field.id] ?? "")}
+                            onChange={(e) =>
+                              updateField(field.id, e.target.value)
+                            }
+                            className="input-field"
+                            disabled={isLocked}
+                          >
+                            <option value="">Select an option</option>
+                            {field.options?.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </>
+                      ) : field.type === "radio" ? (
+                        <>
+                          <FieldLabel
+                            label={field.label}
+                            required={field.required}
+                          />
+                          <div className="mt-3 space-y-2.5">
+                            {field.options?.map((opt) => (
+                              <label
+                                key={opt}
+                                className={`flex items-center gap-3 cursor-pointer group ${isLocked ? "opacity-40 pointer-events-none" : ""}`}
+                              >
+                                <div className="relative shrink-0">
+                                  <input
+                                    type="radio"
+                                    name={field.id}
+                                    checked={form[field.id] === opt}
+                                    onChange={() => updateField(field.id, opt)}
+                                    className="sr-only"
+                                    disabled={isLocked}
+                                  />
+                                  <div
+                                    className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center ${
+                                      form[field.id] === opt
+                                        ? "border-[#00f5ff]"
+                                        : "border-[rgba(224,247,255,0.2)] group-hover:border-[rgba(0,245,255,0.4)]"
+                                    }`}
+                                  >
+                                    {form[field.id] === opt && (
+                                      <div className="w-2 h-2 rounded-full bg-[#00f5ff]" />
+                                    )}
+                                  </div>
+                                </div>
+                                <span className="font-mono-cc text-sm text-[rgba(224,247,255,0.7)] group-hover:text-[rgba(224,247,255,0.9)] transition-colors">
+                                  {opt}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </>
+                      ) : field.type === "file" ? (
+                        <>
+                          <FieldLabel
+                            label={field.label}
+                            required={field.required}
+                          />
+                          <div className="mt-2 relative group">
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) uploadPDF(field.id, f);
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                              disabled={
+                                isLocked ||
+                                !!uploadingField ||
+                                (uploadCounts[`${phase.id}_${field.id}`] ||
+                                  0) >= 3
+                              }
+                            />
+                            <div
+                              className={`w-full border border-dashed transition-all py-8 flex flex-col items-center justify-center gap-2 ${
+                                uploadingField === field.id
+                                  ? "border-[rgba(0,245,255,0.5)] bg-[rgba(0,245,255,0.05)]"
+                                  : "border-[rgba(0,245,255,0.2)] group-hover:border-[rgba(0,245,255,0.45)] group-hover:bg-[rgba(0,245,255,0.03)]"
+                              }`}
+                            >
+                              {uploadingField === field.id ? (
+                                <>
+                                  <div className="scale-50 h-6 flex items-center justify-center">
+                                    <Loader text="" />
+                                  </div>
+                                  <span className="font-mono-cc text-[10px] text-[#00f5ff] uppercase tracking-widest animate-pulse">
+                                    Uploading...
+                                  </span>
+                                </>
+                              ) : form[field.id] ? (
+                                <div className="flex flex-col items-center gap-3 relative z-20">
+                                  <div className="flex items-center gap-2">
+                                    <svg
+                                      width="18"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="#10b981"
+                                      strokeWidth="2.5"
+                                    >
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <span className="font-mono-cc text-[10px] text-[#10b981] uppercase tracking-widest font-bold">
+                                      Packet_Received
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <a
+                                      href={String(form[field.id])}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="px-4 py-1.5 bg-[rgba(16,185,129,0.1)] hover:bg-[rgba(16,185,129,0.2)] text-[#10b981] border border-[rgba(16,185,129,0.3)] font-orbitron font-bold text-[9px] uppercase tracking-widest transition-all"
+                                    >
+                                      Preview File
+                                    </a>
+                                    <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)]">
+                                      |{" "}
+                                      {3 -
+                                        (uploadCounts[
+                                          `${phase.id}_${field.id}`
+                                        ] || 0)}{" "}
+                                      attempts left
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="rgba(0,245,255,0.4)"
+                                    strokeWidth="2"
+                                    className="group-hover:stroke-[rgba(0,245,255,0.7)] transition-colors"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                                    />
+                                  </svg>
+                                  <span className="font-mono-cc text-xs text-[rgba(224,247,255,0.4)]">
+                                    {(uploadCounts[`${phase.id}_${field.id}`] ||
+                                      0) >= 3
+                                      ? "Transmission Locked"
+                                      : "Upload PDF Document"}
+                                  </span>
+                                  <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)] uppercase tracking-widest">
+                                    Max 10MB • Attempts:{" "}
+                                    {uploadCounts[`${phase.id}_${field.id}`] ||
+                                      0}
+                                    /3
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <FieldLabel
+                            label={field.label}
+                            required={field.required}
+                          />
+                          <input
+                            type={field.type}
+                            value={String(form[field.id] ?? "")}
+                            onChange={(e) =>
+                              updateField(field.id, e.target.value)
+                            }
+                            className={`input-field ${phase.id === "phase_1_registration" && field.id === "email" ? "opacity-50 cursor-not-allowed" : ""}`}
+                            disabled={isLocked}
+                            readOnly={
+                              phase.id === "phase_1_registration" &&
+                              field.id === "email"
+                            }
+                            placeholder={`Enter ${field.label.toLowerCase()}...`}
+                          />
+                        </>
                       )}
+
+                      {errors[field.id] && (
+                        <p className="font-mono-cc text-[10px] text-[#f43f5e] mt-1.5 flex items-center gap-1.5">
+                          <span className="w-1 h-1 rounded-full bg-[#f43f5e] shrink-0" />
+                          {errors[field.id]}
+                        </p>
+                      )}
+
+                      {/* Dynamic Member Emails */}
+                      {field.id === "teamSize" &&
+                        Number(form[field.id]) > 1 && (
+                          <div className="mt-6 space-y-6 pl-4 border-l-2 border-[rgba(0,245,255,0.15)] animate-fade-down">
+                            <p className="font-orbitron font-bold text-[10px] text-[rgba(0,245,255,0.6)] uppercase tracking-widest mb-4">
+                              Squad Member Authentication
+                            </p>
+                            {Array.from({
+                              length: Number(form[field.id]) - 1,
+                            }).map((_, i) => {
+                              const memberId = `memberEmail_${i + 1}`;
+                              return (
+                                <div key={memberId}>
+                                  <FieldLabel
+                                    label={`Member ${i + 2} Gmail`}
+                                    required={true}
+                                  />
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="email"
+                                      value={String(form[memberId] ?? "")}
+                                      onChange={(e) =>
+                                        updateField(memberId, e.target.value)
+                                      }
+                                      className="input-field flex-1"
+                                      disabled={isLocked}
+                                      placeholder={`Enter member ${i + 2}'s gmail...`}
+                                    />
+                                    {String(form[memberId]).includes("@") && (
+                                      <div className="shrink-0 flex items-center">
+                                        {!invitationStatus[memberId] ||
+                                        invitationStatus[memberId].status ===
+                                          "none" ? (
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleInvite(
+                                                String(form[memberId]),
+                                                memberId,
+                                              )
+                                            }
+                                            disabled={
+                                              invitationStatus[memberId]
+                                                ?.loading || isLocked
+                                            }
+                                            className="px-4 py-2 bg-cyan-500/20 text-cyan-400 font-bold font-orbitron text-[10px] uppercase tracking-widest border border-cyan-500/30 hover:bg-cyan-500/30 transition-colors disabled:opacity-50"
+                                          >
+                                            {invitationStatus[memberId]?.loading
+                                              ? "Sending..."
+                                              : "Invite"}
+                                          </button>
+                                        ) : invitationStatus[memberId]
+                                            .status === "accepted" ? (
+                                          <div className="px-4 py-2 border font-bold font-orbitron text-[10px] uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                            accepted
+                                          </div>
+                                        ) : (
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleInvite(
+                                                String(form[memberId]),
+                                                memberId,
+                                              )
+                                            }
+                                            disabled={
+                                              invitationStatus[memberId]
+                                                ?.loading || isLocked
+                                            }
+                                            className={`px-4 py-2 font-bold font-orbitron text-[10px] uppercase tracking-widest border transition-colors disabled:opacity-50 ${
+                                              invitationStatus[memberId]
+                                                .status === "rejected"
+                                                ? "bg-rose-500/20 text-rose-400 border-rose-500/30 hover:bg-rose-500/30"
+                                                : "bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30"
+                                            }`}
+                                          >
+                                            {invitationStatus[memberId]?.loading
+                                              ? "Resending..."
+                                              : "Resend"}
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {errors[memberId] && (
+                                    <p className="font-mono-cc text-[10px] text-[#f43f5e] mt-1.5 flex items-center gap-1.5">
+                                      <span className="w-1 h-1 rounded-full bg-[#f43f5e] shrink-0" />
+                                      {errors[memberId]}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-              </div>
-            );
-          })()}
+              );
+            })()}
 
-          {/* Action Buttons */}
-          <div className="pt-4 border-t border-[rgba(255,255,255,0.05)] flex items-center justify-end gap-3">
-            {isCompleted && !isLastPhase && (
-              <button type="button" onClick={onComplete} className="btn-ghost">
-                Next Phase
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
+            {/* Action Buttons */}
+            <div className="pt-4 border-t border-[rgba(255,255,255,0.05)] flex items-center justify-end gap-3">
+              {isCompleted && !isLastPhase && (
+                <button
+                  type="button"
+                  onClick={onComplete}
+                  className="btn-ghost"
                 >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </button>
-            )}
+                  Next Phase
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </button>
+              )}
 
-            {(!isCompleted || isDirty || (isCompleted && !isLocked && isLastPhase)) && (
-              <button
-                type="submit"
-                disabled={saving || isLocked}
-                className="btn-primary"
-              >
-                {saving ? (
-                  <>
-                    <div className="scale-50 h-5 w-5 flex items-center justify-center">
-                      <Loader text="" />
-                    </div>
-                    Transmitting...
-                  </>
-                ) : isLastPhase ? (
-                  <>
-                    Final Submit{" "}
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </>
-                ) : isCompleted ? (
-                  "Update Data"
-                ) : (
-                  <>
-                    Submit{" "}
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </>
-                )}
-              </button>
-            )}
+              {(!isCompleted ||
+                isDirty ||
+                (isCompleted && !isLocked && isLastPhase)) && (
+                <button
+                  type="submit"
+                  disabled={saving || isLocked}
+                  className="btn-primary"
+                >
+                  {saving ? (
+                    <>
+                      <div className="scale-50 h-5 w-5 flex items-center justify-center">
+                        <Loader text="" />
+                      </div>
+                      Transmitting...
+                    </>
+                  ) : isLastPhase ? (
+                    <>
+                      Final Submit{" "}
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </>
+                  ) : isCompleted ? (
+                    "Update Data"
+                  ) : (
+                    <>
+                      Submit{" "}
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
       )}
     </div>
   );

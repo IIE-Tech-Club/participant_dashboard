@@ -43,6 +43,18 @@ export default function HackathonDetailPage() {
     fetchHackathon();
   }, [hackathonId]);
 
+  const refreshProgress = async () => {
+    if (!user || !hackathonId || !hackathon) return;
+    const p = await fetchProgress(hackathonId, user.uid);
+    setProgress(p);
+    const phases = hackathon.phases || [];
+    let deepest = phases[0]?.id ?? "";
+    for (const ph of phases) {
+      if (isPhaseUnlocked(phases, p.responses, ph.id)) deepest = ph.id;
+    }
+    setActivePhaseId(deepest);
+  };
+
   useEffect(() => {
     const init = async () => {
       if (!user || !hackathonId || !hackathon) return;
@@ -59,17 +71,15 @@ export default function HackathonDetailPage() {
     if (!authLoading && !hackathonLoading) init();
   }, [hackathonId, user, authLoading, hackathonLoading, hackathon]);
 
-  const refreshProgress = async () => {
-    if (!user || !hackathonId || !hackathon) return;
-    const p = await fetchProgress(hackathonId, user.uid);
-    setProgress(p);
-    const phases = hackathon.phases || [];
-    let deepest = phases[0]?.id ?? "";
-    for (const ph of phases) {
-      if (isPhaseUnlocked(phases, p.responses, ph.id)) deepest = ph.id;
-    }
-    setActivePhaseId(deepest);
-  };
+  // Poll for team-synced progress every 15 seconds
+  useEffect(() => {
+    if (!mounted || !user || !hackathonId || !hackathon) return;
+    const interval = setInterval(() => {
+      refreshProgress();
+    }, 15000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, user, hackathonId, hackathon]);
 
   if (authError || fetchError) {
     return (

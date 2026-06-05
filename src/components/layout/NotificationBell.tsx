@@ -79,7 +79,7 @@ export default function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-300 hover:text-cyan-400 transition-colors"
+        className="relative p-2 text-slate-300 hover:text-purple-400 transition-colors"
       >
         {invitations.length > 0 ? (
           // 🔔 ringing bell
@@ -111,9 +111,9 @@ export default function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-[#0a1220] border border-[rgba(0,245,255,0.2)] shadow-[0_4px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl animate-fade-down z-50">
-          <div className="p-3 border-b border-[rgba(0,245,255,0.1)] flex items-center justify-between">
-            <span className="font-orbitron font-bold text-[10px] text-cyan-400 uppercase tracking-widest">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-[#0f0f24]/95 border border-purple-500/20 shadow-[0_4px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl animate-fade-down z-50">
+          <div className="p-3 border-b border-purple-500/10 flex items-center justify-between">
+            <span className="font-orbitron font-bold text-[10px] text-purple-300 uppercase tracking-widest">
               Incoming Transmissions
             </span>
             <span className="font-mono text-[9px] text-slate-500">
@@ -132,7 +132,7 @@ export default function NotificationBell() {
               invitations.map((invite) => (
                 <div
                   key={invite._id}
-                  className="p-4 border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(0,245,255,0.02)] transition-colors"
+                  className="p-4 border-b border-[rgba(255,255,255,0.05)] hover:bg-purple-500/5 transition-colors"
                 >
                   <p className="font-mono text-[10px] text-slate-400 mb-1">
                     From:{" "}
@@ -140,7 +140,7 @@ export default function NotificationBell() {
                   </p>
                   <p className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-3">
                     Squad:{" "}
-                    <span className="text-cyan-400">{invite.teamName}</span>
+                    <span className="text-purple-300">{invite.teamName}</span>
                   </p>
                   <div className="flex items-center gap-2">
                     <button

@@ -662,24 +662,24 @@ export default function DynamicPhase({
       {/* Phase Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <span className="font-mono-cc text-[9px] text-[rgba(0,245,255,0.4)] uppercase tracking-[0.3em]">
+          <span className="font-mono-cc text-[9px] text-[rgba(241,240,255,0.4)] uppercase tracking-[0.25em]">
             Phase {String(phaseIdx + 1).padStart(2, "0")}
           </span>
-          <span className="flex-1 h-px bg-[rgba(0,245,255,0.08)]" />
+          <span className="flex-1 h-px bg-purple-500/10" />
           <span
-            className={`font-mono-cc text-[9px] uppercase tracking-widest ${
+            className={`font-mono-cc text-[9.5px] uppercase tracking-widest font-semibold ${
               isLocked
-                ? "text-[#f43f5e]"
+                ? "text-rose-400"
                 : isCompleted
-                  ? "text-[#10b981]"
-                  : "text-[#f59e0b]"
+                  ? "text-emerald-400"
+                  : "text-amber-400"
             }`}
           >
             {isLocked ? "● Locked" : isCompleted ? "● Completed" : "● Active"}
           </span>
         </div>
 
-        <h2 className="text-2xl lg:text-3xl font-orbitron font-black text-white uppercase tracking-tight leading-tight">
+        <h2 className="text-2.5xl lg:text-3xl font-orbitron font-black text-white uppercase tracking-tight leading-tight">
           <ReactMarkdown components={{ p: ({ ...p }) => <span {...p} /> }}>
             {phase.name}
           </ReactMarkdown>
@@ -694,24 +694,24 @@ export default function DynamicPhase({
 
       {/* Locked Banner */}
       {isLocked && (
-        <div className="mb-6 flex items-start gap-3 p-4 border border-[rgba(244,63,94,0.25)] bg-[rgba(244,63,94,0.06)]">
+        <div className="mb-6 flex items-start gap-3 p-4 border border-rose-500/20 bg-rose-500/5 rounded-xl">
           <svg
             width="16"
             height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="#f43f5e"
-            strokeWidth="2"
-            className="shrink-0 mt-0.5"
+            strokeWidth="2.5"
+            className="shrink-0 mt-0.5 text-rose-400"
           >
             <rect x="3" y="11" width="18" height="11" rx="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           <div>
-            <p className="font-orbitron font-bold text-[10px] text-[#f43f5e] uppercase tracking-widest mb-1">
+            <p className="font-orbitron font-bold text-[10px] text-rose-400 uppercase tracking-widest mb-1">
               Phase Locked
             </p>
-            <p className="font-mono-cc text-[11px] text-[rgba(224,247,255,0.45)] leading-relaxed">
+            <p className="font-mono-cc text-[11px] text-[rgba(241,240,255,0.55)] leading-relaxed">
               {lockReason}
             </p>
           </div>
@@ -731,7 +731,7 @@ export default function DynamicPhase({
 
       {/* Completed Banner */}
       {isCompleted && (
-        <div className="mb-6 flex items-start gap-3 p-4 border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.06)]">
+        <div className="mb-6 flex items-start gap-3 p-4 border border-emerald-500/20 bg-emerald-500/5 rounded-xl">
           <svg
             width="16"
             height="16"
@@ -739,15 +739,15 @@ export default function DynamicPhase({
             fill="none"
             stroke="#10b981"
             strokeWidth="2.5"
-            className="shrink-0 mt-0.5"
+            className="shrink-0 mt-0.5 text-emerald-400"
           >
             <polyline points="20 6 9 17 4 12" />
           </svg>
           <div>
-            <p className="font-orbitron font-bold text-[10px] text-[#10b981] uppercase tracking-widest mb-1">
+            <p className="font-orbitron font-bold text-[10px] text-emerald-400 uppercase tracking-widest mb-1">
               Response Logged
             </p>
-            <p className="font-mono-cc text-[11px] text-[rgba(224,247,255,0.45)] leading-relaxed">
+            <p className="font-mono-cc text-[11px] text-[rgba(241,240,255,0.55)] leading-relaxed">
               Your submission has been recorded. You may update your information
               at any time until the phase deadline.
             </p>
@@ -758,10 +758,10 @@ export default function DynamicPhase({
       {/* Accepted Team Read-Only View */}
       {isLocked && !isCompleted ? null : acceptedTeam && !isCompleted ? (
         <div className="space-y-6">
-          <div className="glass-card p-6 border-emerald-500/30 bg-emerald-900/10">
+          <div className="glass-card p-6 border-emerald-500/20 bg-emerald-950/10 rounded-2xl">
             <h3 className="text-lg font-orbitron font-bold text-emerald-400 mb-2 uppercase tracking-widest flex items-center gap-2">
               <svg
-                className="w-5 h-5"
+                className="w-5 h-5 text-emerald-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -803,7 +803,7 @@ export default function DynamicPhase({
       ) : (
         /* Form */
         <form onSubmit={handleSubmit}>
-          <div className="glass-card p-6 lg:p-8 space-y-7">
+          <div className="glass-card p-6 lg:p-8 space-y-7 rounded-2xl border-purple-500/10">
             {/* Form Fields */}
             {(() => {
               const displayFields = [...(phase.fields || [])];
@@ -814,20 +814,20 @@ export default function DynamicPhase({
                     <div key={field.id}>
                       {/* Content block */}
                       {(field.type as string) === "content" ? (
-                        <div className="relative p-5 border border-[rgba(0,245,255,0.12)] bg-[rgba(0,245,255,0.03)] overflow-hidden">
-                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[rgba(0,245,255,0.35)]" />
+                        <div className="relative p-5 border border-purple-500/15 bg-purple-500/[0.02] overflow-hidden rounded-xl">
+                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-purple-500/40" />
                           <div className="pl-2">
                             <ReactMarkdown
                               components={{
                                 p: ({ ...p }) => (
                                   <p
-                                    className="mb-2 last:mb-0 font-mono-cc text-xs text-[rgba(224,247,255,0.5)] leading-relaxed"
+                                    className="mb-2 last:mb-0 font-mono-cc text-xs text-[rgba(241,240,255,0.5)] leading-relaxed"
                                     {...p}
                                   />
                                 ),
                                 a: ({ ...p }) => (
                                   <a
-                                    className="text-[#00f5ff] underline"
+                                    className="text-purple-300 underline hover:text-purple-200"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     {...p}
@@ -835,7 +835,7 @@ export default function DynamicPhase({
                                 ),
                                 strong: ({ ...p }) => (
                                   <strong
-                                    className="text-[rgba(224,247,255,0.8)]"
+                                    className="text-[rgba(241,240,255,0.8)] font-semibold"
                                     {...p}
                                   />
                                 ),
@@ -860,10 +860,10 @@ export default function DynamicPhase({
                               disabled={isLocked}
                             />
                             <div
-                              className={`w-5 h-5 border transition-all duration-200 flex items-center justify-center ${
+                              className={`w-5 h-5 rounded border transition-all duration-200 flex items-center justify-center ${
                                 form[field.id]
-                                  ? "bg-[#00f5ff] border-[#00f5ff]"
-                                  : "border-[rgba(224,247,255,0.2)] group-hover:border-[rgba(0,245,255,0.5)]"
+                                  ? "bg-purple-500 border-purple-500"
+                                  : "border-[rgba(241,240,255,0.2)] group-hover:border-purple-400/50"
                               }`}
                             >
                               {form[field.id] && (
@@ -872,7 +872,7 @@ export default function DynamicPhase({
                                   height="10"
                                   viewBox="0 0 24 24"
                                   fill="none"
-                                  stroke="#040b14"
+                                  stroke="#ffffff"
                                   strokeWidth="3.5"
                                 >
                                   <polyline points="20 6 9 17 4 12" />
@@ -880,27 +880,27 @@ export default function DynamicPhase({
                               )}
                             </div>
                           </div>
-                          <span className="font-mono-cc text-sm text-[rgba(224,247,255,0.7)] group-hover:text-[rgba(224,247,255,0.9)] transition-colors leading-relaxed">
+                          <span className="font-mono-cc text-sm text-[rgba(241,240,255,0.7)] group-hover:text-[rgba(241,240,255,0.9)] transition-colors leading-relaxed">
                             <ReactMarkdown
                               components={{
                                 p: ({ ...p }) => <span {...p} />,
                                 a: ({ ...p }) => (
                                   <a
-                                    className="text-[#00f5ff] underline"
+                                    className="text-purple-300 underline"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     {...p}
                                   />
                                 ),
                                 strong: ({ ...p }) => (
-                                  <strong className="text-white" {...p} />
+                                  <strong className="text-white font-semibold" {...p} />
                                 ),
                               }}
                             >
                               {field.label}
                             </ReactMarkdown>
                             {field.required && (
-                              <span className="text-[#00f5ff] ml-1">*</span>
+                              <span className="text-purple-400 ml-1">*</span>
                             )}
                           </span>
                         </label>
@@ -966,16 +966,16 @@ export default function DynamicPhase({
                                   <div
                                     className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center ${
                                       form[field.id] === opt
-                                        ? "border-[#00f5ff]"
-                                        : "border-[rgba(224,247,255,0.2)] group-hover:border-[rgba(0,245,255,0.4)]"
+                                        ? "border-purple-500"
+                                        : "border-[rgba(241,240,255,0.2)] group-hover:border-purple-400/50"
                                     }`}
                                   >
                                     {form[field.id] === opt && (
-                                      <div className="w-2 h-2 rounded-full bg-[#00f5ff]" />
+                                      <div className="w-2 h-2 rounded-full bg-purple-500" />
                                     )}
                                   </div>
                                 </div>
-                                <span className="font-mono-cc text-sm text-[rgba(224,247,255,0.7)] group-hover:text-[rgba(224,247,255,0.9)] transition-colors">
+                                <span className="font-mono-cc text-sm text-[rgba(241,240,255,0.7)] group-hover:text-[rgba(241,240,255,0.9)] transition-colors">
                                   {opt}
                                 </span>
                               </label>
@@ -1005,10 +1005,10 @@ export default function DynamicPhase({
                               }
                             />
                             <div
-                              className={`w-full border border-dashed transition-all py-8 flex flex-col items-center justify-center gap-2 ${
+                              className={`w-full border border-dashed rounded-xl transition-all py-8 flex flex-col items-center justify-center gap-2.5 ${
                                 uploadingField === field.id
-                                  ? "border-[rgba(0,245,255,0.5)] bg-[rgba(0,245,255,0.05)]"
-                                  : "border-[rgba(0,245,255,0.2)] group-hover:border-[rgba(0,245,255,0.45)] group-hover:bg-[rgba(0,245,255,0.03)]"
+                                  ? "border-purple-500 bg-purple-500/5"
+                                  : "border-purple-500/20 group-hover:border-purple-500/40 group-hover:bg-purple-500/[0.02]"
                               }`}
                             >
                               {uploadingField === field.id ? (
@@ -1016,7 +1016,7 @@ export default function DynamicPhase({
                                   <div className="scale-50 h-6 flex items-center justify-center">
                                     <Loader text="" />
                                   </div>
-                                  <span className="font-mono-cc text-[10px] text-[#00f5ff] uppercase tracking-widest animate-pulse">
+                                  <span className="font-mono-cc text-[10px] text-purple-400 uppercase tracking-widest animate-pulse">
                                     Uploading...
                                   </span>
                                 </>
@@ -1043,11 +1043,11 @@ export default function DynamicPhase({
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={(e) => e.stopPropagation()}
-                                      className="px-4 py-1.5 bg-[rgba(16,185,129,0.1)] hover:bg-[rgba(16,185,129,0.2)] text-[#10b981] border border-[rgba(16,185,129,0.3)] font-orbitron font-bold text-[9px] uppercase tracking-widest transition-all"
+                                      className="px-4 py-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-[#10b981] border border-emerald-500/20 font-orbitron font-bold text-[9px] uppercase tracking-widest transition-all"
                                     >
                                       Preview File
                                     </a>
-                                    <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)]">
+                                    <span className="font-mono-cc text-[9.5px] text-[rgba(241,240,255,0.3)]">
                                       |{" "}
                                       {3 -
                                         (uploadCounts[
@@ -1060,13 +1060,13 @@ export default function DynamicPhase({
                               ) : (
                                 <>
                                   <svg
-                                    width="20"
-                                    height="20"
+                                    width="22"
+                                    height="22"
                                     viewBox="0 0 24 24"
                                     fill="none"
-                                    stroke="rgba(0,245,255,0.4)"
+                                    stroke="rgba(192, 132, 252, 0.4)"
                                     strokeWidth="2"
-                                    className="group-hover:stroke-[rgba(0,245,255,0.7)] transition-colors"
+                                    className="group-hover:stroke-purple-400 transition-colors"
                                   >
                                     <path
                                       strokeLinecap="round"
@@ -1074,13 +1074,13 @@ export default function DynamicPhase({
                                       d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
                                     />
                                   </svg>
-                                  <span className="font-mono-cc text-xs text-[rgba(224,247,255,0.4)]">
+                                  <span className="font-mono-cc text-xs text-[rgba(241,240,255,0.5)]">
                                     {(uploadCounts[`${phase.id}_${field.id}`] ||
                                       0) >= 3
                                       ? "Transmission Locked"
                                       : "Upload PDF Document"}
                                   </span>
-                                  <span className="font-mono-cc text-[9px] text-[rgba(224,247,255,0.2)] uppercase tracking-widest">
+                                  <span className="font-mono-cc text-[9px] text-[rgba(241,240,255,0.3)] uppercase tracking-wider">
                                     Max 10MB • Attempts:{" "}
                                     {uploadCounts[`${phase.id}_${field.id}`] ||
                                       0}
@@ -1115,8 +1115,8 @@ export default function DynamicPhase({
                       )}
 
                       {errors[field.id] && (
-                        <p className="font-mono-cc text-[10px] text-[#f43f5e] mt-1.5 flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-[#f43f5e] shrink-0" />
+                        <p className="font-mono-cc text-[10.5px] text-rose-400 mt-1.5 flex items-center gap-1.5">
+                          <span className="w-1 h-1 rounded-full bg-rose-400 shrink-0" />
                           {errors[field.id]}
                         </p>
                       )}
@@ -1124,8 +1124,8 @@ export default function DynamicPhase({
                       {/* Dynamic Member Emails */}
                       {field.id === "teamSize" &&
                         Number(form[field.id]) > 1 && (
-                          <div className="mt-6 space-y-6 pl-4 border-l-2 border-[rgba(0,245,255,0.15)] animate-fade-down">
-                            <p className="font-orbitron font-bold text-[10px] text-[rgba(0,245,255,0.6)] uppercase tracking-widest mb-4">
+                          <div className="mt-6 space-y-6 pl-4 border-l border-purple-500/20 animate-fade-down">
+                            <p className="font-orbitron font-bold text-[10px] text-purple-400 uppercase tracking-widest mb-4">
                               Squad Member Authentication
                             </p>
                             {Array.from({
@@ -1166,7 +1166,7 @@ export default function DynamicPhase({
                                               invitationStatus[memberId]
                                                 ?.loading || isLocked
                                             }
-                                            className="px-4 py-2 bg-cyan-500/20 text-cyan-400 font-bold font-orbitron text-[10px] uppercase tracking-widest border border-cyan-500/30 hover:bg-cyan-500/30 transition-colors disabled:opacity-50"
+                                            className="px-4 py-2 rounded-lg bg-purple-500/10 text-purple-300 font-semibold font-orbitron text-[10px] uppercase tracking-wider border border-purple-500/20 hover:bg-purple-500/20 transition-all disabled:opacity-50"
                                           >
                                             {invitationStatus[memberId]?.loading
                                               ? "Sending..."
@@ -1174,7 +1174,7 @@ export default function DynamicPhase({
                                           </button>
                                         ) : invitationStatus[memberId]
                                             .status === "accepted" ? (
-                                          <div className="px-4 py-2 border font-bold font-orbitron text-[10px] uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                          <div className="px-4 py-2 border rounded-lg font-bold font-orbitron text-[10px] uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                                             accepted
                                           </div>
                                         ) : (
@@ -1190,11 +1190,11 @@ export default function DynamicPhase({
                                               invitationStatus[memberId]
                                                 ?.loading || isLocked
                                             }
-                                            className={`px-4 py-2 font-bold font-orbitron text-[10px] uppercase tracking-widest border transition-colors disabled:opacity-50 ${
+                                            className={`px-4 py-2 rounded-lg font-semibold font-orbitron text-[10px] uppercase tracking-wider border transition-colors disabled:opacity-50 ${
                                               invitationStatus[memberId]
                                                 .status === "rejected"
-                                                ? "bg-rose-500/20 text-rose-400 border-rose-500/30 hover:bg-rose-500/30"
-                                                : "bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30"
+                                                ? "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20"
+                                                : "bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20"
                                             }`}
                                           >
                                             {invitationStatus[memberId]?.loading
@@ -1206,8 +1206,8 @@ export default function DynamicPhase({
                                     )}
                                   </div>
                                   {errors[memberId] && (
-                                    <p className="font-mono-cc text-[10px] text-[#f43f5e] mt-1.5 flex items-center gap-1.5">
-                                      <span className="w-1 h-1 rounded-full bg-[#f43f5e] shrink-0" />
+                                    <p className="font-mono-cc text-[10.5px] text-rose-400 mt-1.5 flex items-center gap-1.5">
+                                      <span className="w-1 h-1 rounded-full bg-rose-400 shrink-0" />
                                       {errors[memberId]}
                                     </p>
                                   )}
@@ -1223,17 +1223,17 @@ export default function DynamicPhase({
             })()}
 
             {/* Action Buttons */}
-            <div className="pt-4 border-t border-[rgba(255,255,255,0.05)] flex items-center justify-end gap-3">
+            <div className="pt-5 border-t border-white/[0.05] flex items-center justify-end gap-3">
               {isCompleted && !isLastPhase && (
                 <button
                   type="button"
                   onClick={onComplete}
-                  className="btn-ghost"
+                  className="btn-secondary py-2! px-5!"
                 >
                   Next Phase
                   <svg
-                    width="10"
-                    height="10"
+                    width="12"
+                    height="12"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -1251,7 +1251,7 @@ export default function DynamicPhase({
                 <button
                   type="submit"
                   disabled={saving || isLocked}
-                  className="btn-primary"
+                  className="btn-primary py-2! px-6!"
                 >
                   {saving ? (
                     <>
@@ -1264,8 +1264,8 @@ export default function DynamicPhase({
                     <>
                       Final Submit{" "}
                       <svg
-                        width="10"
-                        height="10"
+                        width="12"
+                        height="12"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1281,8 +1281,8 @@ export default function DynamicPhase({
                     <>
                       Submit{" "}
                       <svg
-                        width="10"
-                        height="10"
+                        width="12"
+                        height="12"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"

@@ -1124,7 +1124,7 @@ export default function DynamicPhase({
                       {/* Dynamic Member Emails */}
                       {field.id === "teamSize" &&
                         Number(form[field.id]) > 1 && (
-                          <div className="mt-6 space-y-6 pl-4 border-l border-purple-500/20 animate-fade-down">
+                          <div className="mt-6 space-y-6 pl-4 border-l border-purple-500/20 animate-fade-up">
                             <p className="font-orbitron font-bold text-[10px] text-purple-400 uppercase tracking-widest mb-4">
                               Squad Member Authentication
                             </p>

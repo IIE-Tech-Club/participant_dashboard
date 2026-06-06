@@ -5,68 +5,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { signInWithGoogle } from "@/lib/firebase/client";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import Loader from "@/components/ui/Loader";
-
-// ── Animated counter hook ─────────────────────────────────────────────────────
-function useCounter(end: number, duration = 1800, start = false) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!start) return;
-    let startTime: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 4);
-      setCount(Math.floor(eased * end));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [end, duration, start]);
-  return count;
-}
-
-// ── Stat item ─────────────────────────────────────────────────────────────────
-function StatItem({
-  end,
-  suffix,
-  label,
-  color,
-  started,
-}: {
-  end: number;
-  suffix: string;
-  label: string;
-  color: string;
-  started: boolean;
-}) {
-  const val = useCounter(end, 1600, started);
-  return (
-    <div className="text-center md:text-left">
-      <div
-        className="font-orbitron font-black text-3xl sm:text-4xl tabular-nums bg-gradient-to-r from-white via-purple-200 to-fuchsia-300 bg-clip-text text-transparent"
-        style={{ filter: `drop-shadow(0 0 10px ${color}33)` }}
-      >
-        {val}
-        {suffix}
-      </div>
-      <p className="font-mono-cc text-[9px] sm:text-xs text-[rgba(241,240,255,0.4)] uppercase tracking-[0.2em] mt-1.5 font-medium">
-        {label}
-      </p>
-    </div>
-  );
-}
+import logo from "@/assets/logo.svg"
 
 export default function LandingPage() {
   const { loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [statsStarted, setStatsStarted] = useState(false);
 
   // GSAP refs
   const pageRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLDivElement>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
 
@@ -140,21 +90,6 @@ export default function LandingPage() {
             { opacity: 0, y: 16 },
             { opacity: 1, y: 0, duration: 0.6 },
             0.5
-          );
-        }
-
-        // Stats row
-        if (statsRef.current) {
-          tl.fromTo(
-            statsRef.current,
-            { opacity: 0, y: 12 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.5,
-              onComplete: () => setStatsStarted(true),
-            },
-            0.65
           );
         }
 
@@ -333,42 +268,6 @@ export default function LandingPage() {
     },
   ];
 
-  // ── Testimonials data ───────────────────────────────────────────────────────
-  const testimonials = [
-    {
-      quote: "This platform transformed how we organize hackathons. The participant dashboard made everything seamless and transparent.",
-      author: "Sarah Chen",
-      role: "Hackathon Organizer",
-      project: "TechStart 2024",
-      initials: "SC",
-      gradient: "from-purple-500 to-indigo-500",
-    },
-    {
-      quote: "Built my first AI project here. The resources, mentorship, and community support were absolutely incredible.",
-      author: "Alex Rodriguez",
-      role: "Full-Stack Developer",
-      project: "AI Chat Assistant",
-      initials: "AR",
-      gradient: "from-pink-500 to-rose-500",
-    },
-    {
-      quote: "Won my first hackathon! The phase tracking system helped me stay organized and submit on time without stress.",
-      author: "Jordan Kim",
-      role: "Student Developer",
-      project: "IoT Smart Home",
-      initials: "JK",
-      gradient: "from-emerald-500 to-teal-500",
-    },
-    {
-      quote: "The networking opportunities were amazing. I landed an internship through connections I made right here!",
-      author: "Emma Wilson",
-      role: "CS Graduate",
-      project: "Mobile App",
-      initials: "EW",
-      gradient: "from-orange-500 to-amber-500",
-    },
-  ];
-
   return (
     <div
       ref={pageRef}
@@ -387,13 +286,10 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-[#05050a]/75 backdrop-blur-md border-b border-[rgba(255,255,255,0.06)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg border border-purple-500/30 flex items-center justify-center bg-purple-500/5 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c084fc" strokeWidth="2.5">
-                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
-              </svg>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/5 relative overflow-hidden group">
+              <img className="w-full h-full object-contain" src={logo.src} alt="Logo" />
             </div>
-            <span className="font-orbitron font-black text-base sm:text-lg text-white tracking-widest uppercase whitespace-nowrap">
+            <span className="font-orbitron font-black text-sm sm:text-lg text-white tracking-widest uppercase whitespace-nowrap">
               IIE <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">TECH</span> CLUB
             </span>
           </div>
@@ -406,7 +302,7 @@ export default function LandingPage() {
             <button
               onClick={handleSignIn}
               disabled={loading || authLoading}
-              className="btn-primary py-1.5! px-5! text-[10px] sm:text-[11px] font-bold tracking-widest uppercase magnetic-btn"
+              className="btn-primary py-1.5! px-3! sm:px-5! text-[9px] sm:text-[11px] font-bold tracking-widest uppercase magnetic-btn"
             >
               {loading || authLoading ? "..." : "Connect Portal"}
             </button>
@@ -440,14 +336,14 @@ export default function LandingPage() {
             {/* Headline */}
             <div ref={headlineRef} className="overflow-hidden">
               <h1 className="font-orbitron font-black leading-tight uppercase tracking-tighter text-left">
-                <span className="headline-word block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white drop-shadow-sm">
+                <span className="headline-word block text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-white drop-shadow-sm">
                   PARTICIPATE
                 </span>
-                <span className="headline-word block text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="headline-word block text-4xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
                   BUILD
                 </span>
                 <span
-                  className="headline-word block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-transparent"
+                  className="headline-word block text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-transparent"
                   style={{
                     WebkitTextStroke: "1.5px rgba(236,72,153,0.5)",
                   }}
@@ -463,17 +359,6 @@ export default function LandingPage() {
               Join a premier collaborative network of student builders. Build high-impact projects, showcase your technical skills, and accelerate your engineering journey.
             </p>
 
-            {/* Stats row */}
-            <div
-              ref={statsRef}
-              className="flex flex-wrap items-center gap-6 sm:gap-8 pt-2"
-            >
-              <StatItem end={500} suffix="+" label="Hackers" color="#c084fc" started={statsStarted} />
-              <div className="w-px h-8 bg-purple-500/10 hidden sm:block" />
-              <StatItem end={50} suffix="+" label="Hackathons" color="#ec4899" started={statsStarted} />
-              <div className="w-px h-8 bg-purple-500/10 hidden sm:block" />
-              <StatItem end={1000} suffix="+" label="Submissions" color="#10b981" started={statsStarted} />
-            </div>
           </div>
 
           {/* RIGHT COLUMN — Auth Card */}
@@ -586,7 +471,7 @@ export default function LandingPage() {
             {features.map((f, idx) => (
               <div
                 key={f.title}
-                className={`feature-card glass-card p-8 group relative overflow-hidden cursor-default ${f.className || ""}`}
+                className={`feature-card glass-card p-6 sm:p-8 group relative overflow-hidden cursor-default ${f.className || ""}`}
                 style={{ animationDelay: `${idx * 0.08}s` }}
               >
                 <div className="card-shimmer" />
@@ -616,79 +501,6 @@ export default function LandingPage() {
                   className="absolute bottom-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   style={{ background: `linear-gradient(90deg, transparent, ${f.color}, transparent)` }}
                 />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Marquee Stats Banner ── */}
-      <div className="py-4 border-y border-white/[0.04] bg-purple-500/[0.01] overflow-hidden">
-        <div
-          className="flex gap-16 whitespace-nowrap"
-          style={{ animation: "data-stream 15s linear infinite" }}
-        >
-          {["500+ ACTIVE BUILDERS", "50+ ELITE HACKATHONS", "$50K+ PRIZE POOLS", "1000+ COMMITTED PROJECTS", "24/7 MENTOR SUPPORT", "GOOGLE SECURE AUTH", "REAL-TIME EVALUATION"].map((item, idx) => (
-            <span key={idx} className="font-orbitron font-bold text-[10px] text-purple-300/30 uppercase tracking-[0.2em] flex items-center gap-4">
-              {item}
-              <span className="w-1 h-1 rounded-full bg-pink-500/35" />
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Testimonials ── */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 lg:px-8 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-14 sm:mb-20 space-y-4">
-            <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-purple-500/15 bg-purple-500/5">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse-dot" />
-              <span className="font-orbitron font-bold text-[9px] text-purple-300 uppercase tracking-widest">Builder Network</span>
-            </div>
-            <h2 className="font-orbitron font-black text-4xl md:text-5xl lg:text-6xl text-white uppercase tracking-tighter">
-              What Builders{" "}
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Say
-              </span>
-            </h2>
-            <p className="font-grotesk text-sm sm:text-base text-[rgba(241,240,255,0.5)] max-w-xl mx-auto leading-relaxed">
-              Join thousands of students who have launched real-world projects and kickstarted their tech careers
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {testimonials.map((t, idx) => (
-              <div
-                key={t.author}
-                className="testimonial-card glass-card p-6 sm:p-8 relative overflow-hidden group"
-              >
-                <div className="card-shimmer" />
-
-                <div className="absolute top-4 right-6 font-orbitron font-black text-7xl text-purple-500/[0.04] pointer-events-none select-none leading-none">
-                  "
-                </div>
-
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-3.5 h-3.5 fill-pink-500/80" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
-                </div>
-
-                <p className="font-grotesk text-sm sm:text-base text-[rgba(241,240,255,0.7)] mb-6 leading-relaxed italic">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-
-                <div className="flex items-center gap-3.5 border-t border-white/[0.05] pt-5">
-                  <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center shrink-0`}>
-                    <span className="font-bold text-white text-xs tracking-wider">{t.initials}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-orbitron font-bold text-xs text-white uppercase tracking-wide truncate">{t.author}</p>
-                    <p className="font-mono-cc text-[9.5px] text-[rgba(241,240,255,0.4)] truncate">{t.role} · <span className="text-purple-300">{t.project}</span></p>
-                  </div>
-                </div>
               </div>
             ))}
           </div>

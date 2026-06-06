@@ -149,24 +149,6 @@ export default function HeroSection() {
           </button>
         </div>
 
-        {/* Live stats */}
-        <div ref={statsRef} className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-4">
-          {[
-            { val: c1, suffix: "+", label: "Participants", color: "#00f5ff" },
-            { val: c2, suffix: "+", label: "Hackathons", color: "#8b5cf6" },
-            { val: c3, suffix: "+", label: "Projects Built", color: "#10b981" },
-          ].map((s, i) => (
-            <div key={s.label} className="flex items-center gap-4">
-              {i > 0 && <div className="w-px h-8 bg-[rgba(0,245,255,0.15)] hidden sm:block" />}
-              <div className="text-center">
-                <div className="font-orbitron font-black text-2xl sm:text-3xl tabular-nums" style={{ color: s.color, textShadow: `0 0 16px ${s.color}55` }}>
-                  {s.val}{s.suffix}
-                </div>
-                <p className="font-mono-cc text-[9px] sm:text-[10px] text-[rgba(224,247,255,0.4)] uppercase tracking-widest">{s.label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
 
         {/* Trust badges */}
         <div className="flex flex-wrap gap-3 justify-center pt-2">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import NotificationBell from "./NotificationBell";
+import ProfileDropdown from "./ProfileDropdown";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 import { signOutUser } from "@/lib/firebase/client";
@@ -185,7 +185,7 @@ export default function Navbar() {
 
           {/* Right: actions */}
           <div ref={actionsRef} className="flex items-center gap-2 sm:gap-4">
-            <NotificationBell />
+            <ProfileDropdown />
           </div>
         </div>
       </header>

@@ -261,7 +261,7 @@ export default function DashboardPage() {
       {/* ── Hero Banner ── */}
       <div
         ref={heroRef}
-        className="relative h-52 sm:h-64 md:h-80 shrink-0 overflow-hidden border-b border-purple-500/15"
+        className="relative h-32 sm:h-44 md:h-56 shrink-0 overflow-hidden border-b border-purple-500/15"
       >
         {/* BG layers */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_120%,rgba(139,92,246,0.1)_0%,transparent_60%)]" />
@@ -306,55 +306,8 @@ export default function DashboardPage() {
               {/* Subtitle */}
               <p ref={subtitleRef} className="font-mono-cc text-xs text-[rgba(241,240,255,0.5)] mb-3 hidden sm:flex items-center gap-2">
                 <span className="w-3 h-px bg-purple-500/40" />
-                Welcome back, {firstName}. All systems operational.
+                Welcome back, {firstName}.
               </p>
-              {/* Actions */}
-              <div ref={actionsRef} className="hidden sm:flex items-center gap-2 sm:gap-3">
-                <Link
-                  href={`/${user?.uid}/profile`}
-                  className="btn-primary py-2! px-4! sm:py-3! sm:px-6! text-[10px] sm:text-[11px] magnetic-btn"
-                >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2a5 5 0 1 1 -5 5l.005-.217A5 5 0 0 1 12 2zm0 12a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9z"/>
-                  </svg>
-                  PROFILE
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="btn-ghost py-2! px-3! sm:py-3! sm:px-5! text-[10px] sm:text-[11px] magnetic-btn"
-                >
-                  LOGOUT
-                </button>
-              </div>
-            </div>
-
-            {/* Avatar */}
-            <div ref={avatarRef} className="shrink-0 relative group hidden sm:block">
-              {/* Outer rotating ring */}
-              <div className="absolute inset-[-12px] border border-dashed border-purple-500/12 rounded-full animate-rotation" />
-              {/* Middle ring */}
-              <div className="absolute inset-[-4px] border border-pink-500/10 rounded-full animate-rotation-back" />
-              {/* Avatar */}
-              <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-full border-2 border-purple-500/30 bg-[#0f0f24] overflow-hidden relative z-10 shadow-[0_0_40px_rgba(139,92,246,0.15)] group-hover:border-purple-400 group-hover:shadow-[0_0_60px_rgba(236,72,153,0.3)] transition-all duration-500 animate-float-glow">
-                {user?.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt={user.displayName || "User"}
-                    fill
-                    priority
-                    loading="eager"
-                    sizes="(max-width: 768px) 96px, (max-width: 1024px) 144px, 192px"
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-purple-300 text-3xl sm:text-5xl font-black font-orbitron animate-neon-shimmer">
-                    {firstName[0]}
-                  </div>
-                )}
-                {/* Inner glow overlay on hover */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.15),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              </div>
             </div>
           </div>
         </div>

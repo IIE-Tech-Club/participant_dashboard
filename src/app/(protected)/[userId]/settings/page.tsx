@@ -30,10 +30,9 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       if (!user) return;
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/users/${user.uid}`,
-          { cache: "no-store" }
-        );
+        const res = await fetch(`${API_BASE_URL}/users/${user.uid}`, {
+          cache: "no-store",
+        });
         if (!res.ok) throw new Error("Failed to load profile data.");
         const data = await res.json();
 
@@ -49,7 +48,8 @@ export default function ProfilePage() {
           linkedin: data.linkedin || "",
         });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to connect to database.";
+        const msg =
+          err instanceof Error ? err.message : "Failed to connect to database.";
         setError(msg);
       } finally {
         setLoading(false);
@@ -78,16 +78,13 @@ export default function ProfilePage() {
     setSuccess(false);
 
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/users/${user.uid}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
+      const res = await fetch(`${API_BASE_URL}/users/${user.uid}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(formData),
+      });
 
       if (!res.ok) throw new Error("Failed to update profile.");
       setSuccess(true);
@@ -158,6 +155,9 @@ export default function ProfilePage() {
             type="email"
             value={user?.email || ""}
             disabled
+            placeholder={user?.email || ""}
+            title="Identified Email (immutable)"
+            aria-label="Identified Email"
             className="input-field opacity-50 cursor-not-allowed bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.05)]"
           />
         </div>
@@ -194,6 +194,8 @@ export default function ProfilePage() {
               name="gender"
               value={formData.gender}
               onChange={handleChange}
+              title="Gender"
+              aria-label="Gender"
               className="input-field"
             >
               <option value="">Select Gender</option>
@@ -210,6 +212,8 @@ export default function ProfilePage() {
               name="year"
               value={formData.year}
               onChange={handleChange}
+              title="Current Year"
+              aria-label="Current Year"
               className="input-field"
             >
               <option value="">Select Year</option>
@@ -277,7 +281,7 @@ export default function ProfilePage() {
             value={formData.bio}
             onChange={handleChange}
             placeholder="A brief description about your skills and interests..."
-            className="input-field min-h-[100px] resize-y"
+            className="input-field min-h-25 resize-y"
           />
         </div>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { AuthProvider } from "@/context/AuthProvider";
 import "@/globals.css";
 import type { ReactNode } from "react";
@@ -6,11 +7,18 @@ import CustomCursor from "@/components/ui/CustomCursor";
 import Navbar from "@/components/layout/Navbar";
 import CircuitBackground from "@/components/ui/CircuitBackground";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL, absoluteUrl, siteConfig } from "@/lib/site";
+import { validatePlatformManifest } from "@/lib/platformManifest";
 
 // ✅ Proper font loading (Next.js optimized)
-import { Orbitron, Space_Grotesk, JetBrains_Mono, Charm, MedievalSharp } from "next/font/google";
+import {
+  Orbitron,
+  Space_Grotesk,
+  JetBrains_Mono,
+  Charm,
+  MedievalSharp,
+} from "next/font/google";
 
 const charm = Charm({
   subsets: ["latin"],
@@ -25,7 +33,7 @@ const medievalSharp = MedievalSharp({
 });
 
 const orbitron = Orbitron({
-// ... (keep others for fallback or specific uses)
+  // ... (keep others for fallback or specific uses)
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-orbitron",
@@ -52,7 +60,10 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
-  authors: [{ name: siteConfig.creator }],
+  authors: [
+    { name: siteConfig.creator },
+    { name: "Ayush Choudhary", url: "https://github.com/AR128" },
+  ],
   creator: siteConfig.creator,
   publisher: siteConfig.creator,
   category: "technology",
@@ -92,7 +103,13 @@ export const metadata: Metadata = {
 
 type RootLayoutProps = { children: ReactNode };
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const isManifestValid = await validatePlatformManifest();
+
+  if (!isManifestValid && process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -124,7 +141,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <CircuitBackground opacity={0.3} />
           <div className="scanline-overlay" aria-hidden="true" />
           <Navbar />
-          {children}
+          <main className="flex flex-col min-h-screen">
+            <div className="flex-1">{children}</div>
+          </main>
         </AuthProvider>
         <SpeedInsights />
         <Analytics />

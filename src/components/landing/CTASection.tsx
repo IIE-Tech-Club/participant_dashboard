@@ -56,7 +56,7 @@ export default function CTASection() {
           </span>
         </h2>
 
-        <p className="font-mono-cc text-sm sm:text-base text-[rgba(224,247,255,0.55)] max-w-xl mx-auto leading-relaxed mb-8 sm:mb-10">
+        <p className="font-mono-cc text-sm sm:text-base text-[rgba(224,247,255,0.85)] max-w-prose mx-auto leading-relaxed mb-8 sm:mb-10">
           Join thousands of developers and designers. Participate in your first hackathon today and unlock new opportunities with your community.
         </p>
 
@@ -71,16 +71,16 @@ export default function CTASection() {
               href="/dashboard"
               className="flex-1 neon-btn-cyan py-3.5 px-6 text-sm flex items-center justify-center gap-2 group magnetic-btn"
             >
-              Start Building
+              Start Building Now
               <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
             <button className="flex-1 btn-primary py-3.5 px-6 text-sm flex items-center justify-center gap-2 magnetic-btn">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
-              Get More Info
+              Read Documentation
             </button>
           </div>
 

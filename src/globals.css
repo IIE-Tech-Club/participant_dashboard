@@ -183,6 +183,13 @@ body {
   line-height: 1.6;
 }
 
+/* Global accessible focus states */
+*:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px var(--cyan-dim);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-orbitron), sans-serif;
   letter-spacing: -0.02em;
@@ -320,12 +327,12 @@ select:focus { outline: none; }
 .btn-primary {
   background: linear-gradient(135deg, var(--violet) 0%, var(--rose) 100%);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  padding: 0.75rem 1.75rem;
-  font-weight: 600;
+  padding: 0.85rem 2rem;
+  font-weight: 700;
   font-family: var(--font-orbitron), sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -418,10 +425,10 @@ select:focus { outline: none; }
   background: rgba(192, 132, 252, 0.06);
   color: var(--cyan);
   border-radius: 8px;
-  padding: 0.75rem 1.75rem;
-  font-weight: 700;
+  padding: 0.85rem 2rem;
+  font-weight: 800;
   font-family: var(--font-orbitron), sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: all 0.3s ease;
@@ -451,8 +458,8 @@ select:focus { outline: none; }
 
 .input-field {
   width: 100%;
-  background: rgba(8, 8, 17, 0.5);
-  border: 1px solid rgba(192, 132, 252, 0.12);
+  background: rgba(8, 8, 17, 0.7);
+  border: 1px solid rgba(192, 132, 252, 0.25);
   border-radius: 8px;
   color: #ffffff;
   font-family: var(--font-grotesk), sans-serif;

@@ -28,20 +28,20 @@ export default function ErrorAlert({ title, message, onRetry, className }: Error
           </p>
         </div>
 
-        <p className="font-mono-cc text-[11px] text-[rgba(224,247,255,0.5)] leading-relaxed mb-4">
+        <p className="font-mono-cc text-[12px] text-[#fecdd3] leading-relaxed mb-4">
           {message}
         </p>
 
         {onRetry && (
           <button
             onClick={onRetry}
-            className="flex items-center gap-1.5 font-orbitron font-bold text-[9px] text-[rgba(244,63,94,0.7)] hover:text-[#f43f5e] uppercase tracking-widest transition-colors"
+            className="flex items-center gap-1.5 font-orbitron font-bold text-[10px] text-[#f43f5e] border border-[#f43f5e] bg-[rgba(244,63,94,0.1)] hover:bg-[#f43f5e] hover:text-white uppercase tracking-widest transition-colors py-1.5 px-3 rounded-md"
           >
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="1 4 1 10 7 10"/>
               <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
             </svg>
-            Retry
+            Retry Action
           </button>
         )}
       </div>
